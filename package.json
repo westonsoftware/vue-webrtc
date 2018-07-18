@@ -1,0 +1,53 @@
+{
+  "name": "vue-webrtc",
+  "version": "1.0.0",
+  "description": "WebRTC video component for Vue.js",
+  "main": "dist/index.js",
+  "author": {
+    "name": "Andy Weston",
+    "email": "aweston@westonsoftware.com",
+    "url": "https://github.com/westonsoftware"
+  },
+  "contributors": [],
+  "scripts": {
+    "build": "cross-env NODE_ENV=production webpack --progress --hide-modules --config build/webpack.config.js",
+    "demo": "cross-env NODE_ENV=production webpack-dev-server --open --config demo/webpack.config.js",
+    "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --open --port 31415 --config demo/webpack.config.js",
+    "devs": "cross-env NODE_ENV=development webpack-dev-server --hot --open --https --host 192.168.1.64 --port 31415 --config demo/webpack.config.js"
+  },
+  "dependencies": {
+    "adapterjs": "^0.15.0",
+    "rtcmulticonnection": "^3.4.5",
+    "vue": "^2.0.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/westonsoftware/vue-webrtc"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.0.0",
+    "babel-loader": "^6.0.0",
+    "babel-preset-latest": "^6.0.0",
+    "babel-plugin-transform-runtime": "^6.0.0",
+    "babel-preset-stage-2": "^6.0.0",
+    "cross-env": "^3.0.0",
+    "babel-register": "^6.0.0",
+    "babel-runtime": "^6.0.0",
+    "css-loader": "^0.25.0",
+    "file-loader": "^0.9.0",
+    "extract-text-webpack-plugin": "^1.0.1",
+    "function-bind": "^1.0.2",
+    "html-webpack-plugin": "^2.8.1",
+    "lodash": "^4.17.10",
+    "vue-loader": "^11.1.4",
+    "vue-style-loader": "^1.0.0",
+    "vue-template-compiler": "^2.0.0",
+    "webpack": "^2.2.0",
+    "webpack-dev-server": "^2.2.0",
+    "webpack-merge": "^0.14.1"
+  },
+  "engines": {
+    "node": ">= 8.10.0"
+  }
+}
