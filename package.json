@@ -18,7 +18,8 @@
   "dependencies": {
     "adapterjs": "^0.15.0",
     "rtcmulticonnection": "^3.4.5",
-    "vue": "^2.0.1"
+    "vue": "^2.0.1",
+    "url-parse": ">=1.4.3"
   },
   "repository": {
     "type": "git",
