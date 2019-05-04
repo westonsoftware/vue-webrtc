@@ -1,17 +1,17 @@
 <template>
-  <div class="video-list">
+  <div class="video-list" > 
       <div v-for="item in videoList"
           v-bind:video="item"
           v-bind:key="item.id"
           class="video-item">
-        <video controls autoplay playsinline ref="videos" :height="cameraHeight" :src="item.src" :muted="item.muted" :id="item.id"></video>
+        <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
       </div>
   </div>
 </template>
 
 <script>
-  require('./lib/RTCMultiConnection.js')
-
+  import RTCMultiConnection from 'rtcmulticonnection';
+  require('adapterjs');
   export default {
     name: 'vue-webrtc',
     components: {
@@ -51,8 +51,10 @@
     },
     mounted() {
       var that = this;
+
       this.rtcmConnection = new RTCMultiConnection();
       this.rtcmConnection.socketURL = this.socketURL;
+      this.rtcmConnection.autoCreateMediaElement = false;
       this.rtcmConnection.session = {
         audio: true,
         video: true
@@ -62,17 +64,19 @@
         OfferToReceiveVideo: true
       };
       this.rtcmConnection.onstream = function (event) {
-        event.mediaElement.src = event.mediaElement.srcObject = null;
         let video = {
           id: event.streamid,
-          src: URL.createObjectURL(event.stream),
           muted: event.type === 'local'
         };
         that.videoList.push(video);
         if (event.type === 'local') {
           that.localVideo = video;
         }
-        that.$emit('joined-room', video);
+        that.$emit('joined-room', event.streamid);
+
+        setTimeout(function(){ 
+          that.getCurrentVideo().srcObject = event.stream;
+        }, 1000);
       };
       this.rtcmConnection.onstreamended = function (event) {
         var newList = [];
@@ -87,9 +91,10 @@
     },
     methods: {
       join() {
-        this.rtcmConnection.openOrJoin(this.roomId, function (isRoomExist, roomid) {
+         var that = this;
+         this.rtcmConnection.openOrJoin(this.roomId, function (isRoomExist, roomid) {
           if (isRoomExist === false && that.rtcmConnection.isInitiator === true) {
-            this.$emit('opened-room', roomid);
+            that.$emit('opened-room', roomid);
           }
         });
       },
@@ -97,7 +102,6 @@
         this.rtcmConnection.attachStreams.forEach(function (localStream) {
           localStream.stop();
         });
-        this.rtcmConnection.close();
         this.videoList = [];
       },
       capture() {

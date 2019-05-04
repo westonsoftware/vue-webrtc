@@ -11,7 +11,10 @@
         <div class="">
           <vue-webrtc ref="webrtc"
                       width="100%"
-                      roomId="roomId"
+                      :roomId="roomId"
+                      v-on:joined-room="logEvent"
+                      v-on:left-room="logEvent"
+                      v-on:open-room="logEvent"
                       @error="onError" />
         </div>
         <div class="row">
@@ -67,6 +70,9 @@
       },
       onError(error, stream) {
         console.log('On Error Event', error, stream);
+      },
+      logEvent(event) {
+        console.log('Event : ', event);
       },
     }
   };
