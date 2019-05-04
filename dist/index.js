@@ -216,11 +216,17 @@ exports.default = {
       if (event.type === 'local') {
         that.localVideo = video;
       }
-      that.$emit('joined-room', event.streamid);
 
       setTimeout(function () {
-        that.getCurrentVideo().srcObject = event.stream;
+        for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
+          if (that.$refs.videos[i].id === event.streamid) {
+            that.$refs.videos[i].srcObject = event.stream;
+            break;
+          }
+        }
       }, 1000);
+
+      that.$emit('joined-room', event.streamid);
     };
     this.rtcmConnection.onstreamended = function (event) {
       var newList = [];
