@@ -56,6 +56,9 @@ npm run demo
 | cameraHeight     | number  | 160          | height of video element   |
 | autoplay         | boolean | true         | autoplay attribute        |
 | screenshotFormat | string  | 'image/jpeg' | format of screenshot      |
+| enableAudio      | boolean  | true | enables audio on join      |
+| enableVideo      | boolean  | true | enables video on join      |
+| enableLogs       | boolean  | false | enables webrtc console logs    |
 
 ### Events
 
@@ -64,6 +67,8 @@ npm run demo
 | opened-room    | roomid   | emitted when the first user opens the room                    |
 | joined-room    | video    | emitted when anyone joins the room                            |
 | left-room      | video.id | emitted when anyone leaves the room                           |
+| share-started  | video.id | emitted when a local screen share stream starts               |
+| share-stopped  | video.id | emitted when a local screen share stream stops                |
 
 ### Methods
 
@@ -72,6 +77,7 @@ npm run demo
 | join           | void     | Join a room, opening it if needed                                       |
 | leave          | void     | Leave a room                                                            |
 | capture        | void     | Capture the current image through the webcam as base64 encoded string   |
+| shareScreen    | void     | Share your screen or an app as video   |
 
 ### Styles
 
@@ -79,17 +85,24 @@ npm run demo
 
 .video-item
 
-## License
+## History
 
-MIT
+| Version           | Notes                                                                   |
+| -------------- | ----------------------------------------------------------------------- |
+| 1.2.0           | Added the Screen Share button                                       |
+
 
 ## Roadmap
-This version should be considered a 1.0 work in progress.  There are many more features provided by the RTCMultiConnection library that we'd like to support, including:
+There are many more features provided by the RTCMultiConnection library that we'd like to support, including:
 - Camera selection (we currently use the default camera)
 - Audio selection
 - WebRTC data events
 
 Let us know what you'd like to see next and vote for a feature.
+
+## License
+
+MIT
 
 
 ## Credits

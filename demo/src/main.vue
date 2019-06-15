@@ -15,6 +15,8 @@
                       v-on:joined-room="logEvent"
                       v-on:left-room="logEvent"
                       v-on:open-room="logEvent"
+                      v-on:share-started="logEvent"
+                      v-on:share-stopped="logEvent"
                       @error="onError" />
         </div>
         <div class="row">
@@ -22,6 +24,7 @@
             <button type="button" class="btn btn-primary" @click="onJoin">Join</button>
             <button type="button" class="btn btn-primary" @click="onLeave">Leave</button>
             <button type="button" class="btn btn-primary" @click="onCapture">Capture Photo</button>
+            <button type="button" class="btn btn-primary" @click="onShareScreen">Share Screen</button>
           </div>
         </div>
       </div>
@@ -67,6 +70,9 @@
       },
       onLeave() {
         this.$refs.webrtc.leave();
+      },
+      onShareScreen() {
+        this.img = this.$refs.webrtc.shareScreen();
       },
       onError(error, stream) {
         console.log('On Error Event', error, stream);

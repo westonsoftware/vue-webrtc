@@ -190,6 +190,18 @@ exports.default = {
     screenshotFormat: {
       type: String,
       default: 'image/jpeg'
+    },
+    enableAudio: {
+      type: Boolean,
+      default: true
+    },
+    enableVideo: {
+      type: Boolean,
+      default: true
+    },
+    enableLogs: {
+      type: Boolean,
+      default: false
     }
   },
   watch: {},
@@ -199,44 +211,52 @@ exports.default = {
     this.rtcmConnection = new _rtcmulticonnection2.default();
     this.rtcmConnection.socketURL = this.socketURL;
     this.rtcmConnection.autoCreateMediaElement = false;
+    this.rtcmConnection.enableLogs = this.enableLogs;
     this.rtcmConnection.session = {
-      audio: true,
-      video: true
+      audio: this.enableAudio,
+      video: this.enableVideo
     };
     this.rtcmConnection.sdpConstraints.mandatory = {
-      OfferToReceiveAudio: true,
-      OfferToReceiveVideo: true
+      OfferToReceiveAudio: this.enableAudio,
+      OfferToReceiveVideo: this.enableVideo
     };
-    this.rtcmConnection.onstream = function (event) {
-      var video = {
-        id: event.streamid,
-        muted: event.type === 'local'
-      };
-      that.videoList.push(video);
-      if (event.type === 'local') {
-        that.localVideo = video;
+    this.rtcmConnection.onstream = function (stream) {
+      var found = that.videoList.find(function (video) {
+        return video.id === stream.streamid;
+      });
+      if (found === undefined) {
+        var video = {
+          id: stream.streamid,
+          muted: stream.type === 'local'
+        };
+
+        that.videoList.push(video);
+
+        if (stream.type === 'local') {
+          that.localVideo = video;
+        }
       }
 
       setTimeout(function () {
         for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
-          if (that.$refs.videos[i].id === event.streamid) {
-            that.$refs.videos[i].srcObject = event.stream;
+          if (that.$refs.videos[i].id === stream.streamid) {
+            that.$refs.videos[i].srcObject = stream.stream;
             break;
           }
         }
       }, 1000);
 
-      that.$emit('joined-room', event.streamid);
+      that.$emit('joined-room', stream.streamid);
     };
-    this.rtcmConnection.onstreamended = function (event) {
+    this.rtcmConnection.onstreamended = function (stream) {
       var newList = [];
       that.videoList.forEach(function (item) {
-        if (item.id !== event.streamid) {
+        if (item.id !== stream.streamid) {
           newList.push(item);
         }
       });
       that.videoList = newList;
-      that.$emit('left-room', event.streamid);
+      that.$emit('left-room', stream.streamid);
     };
   },
 
@@ -281,6 +301,45 @@ exports.default = {
         if (this.$refs.videos[i].id === this.localVideo.id) return this.$refs.videos[i];
       }
       return null;
+    },
+    shareScreen: function shareScreen() {
+      var that = this;
+      if (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia) {
+        var addStreamStopListener = function addStreamStopListener(stream, callback) {
+          var streamEndedEvent = 'ended';
+          if ('oninactive' in stream) {
+            streamEndedEvent = 'inactive';
+          }
+          stream.addEventListener(streamEndedEvent, function () {
+            callback();
+            callback = function callback() {};
+          }, false);
+        };
+
+        var onGettingSteam = function onGettingSteam(stream) {
+          that.rtcmConnection.addStream(stream);
+          that.$emit('share-started', stream.streamid);
+
+          addStreamStopListener(stream, function () {
+            that.rtcmConnection.removeStream(stream.streamid);
+            that.$emit('share-stopped', stream.streamid);
+          });
+        };
+
+        var getDisplayMediaError = function getDisplayMediaError(error) {
+          console.log('Media error: ' + JSON.stringify(error));
+        };
+
+        if (navigator.mediaDevices.getDisplayMedia) {
+          navigator.mediaDevices.getDisplayMedia({ video: true, audio: false }).then(function (stream) {
+            onGettingSteam(stream);
+          }, getDisplayMediaError).catch(getDisplayMediaError);
+        } else if (navigator.getDisplayMedia) {
+          navigator.getDisplayMedia({ video: true }).then(function (stream) {
+            onGettingSteam(stream);
+          }, getDisplayMediaError).catch(getDisplayMediaError);
+        }
+      }
     }
   }
 };
