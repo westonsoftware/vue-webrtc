@@ -11,6 +11,7 @@
   "contributors": [],
   "scripts": {
     "build": "cross-env NODE_ENV=production webpack --progress --hide-modules --config build/webpack.config.js",
+    "builddemo": "cross-env NODE_ENV=production webpack --progress --hide-modules --config demo/webpack.config.js",
     "demo": "cross-env NODE_ENV=production webpack-dev-server --open --config demo/webpack.config.js",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --open --port 31415 --config demo/webpack.config.js",
     "devs": "cross-env NODE_ENV=development webpack-dev-server --hot --open --https --host 192.168.1.64 --port 31415 --config demo/webpack.config.js"
