@@ -1,6 +1,6 @@
 {
   "name": "vue-webrtc",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "WebRTC video component for Vue.js",
   "main": "dist/index.js",
   "author": {
@@ -18,9 +18,9 @@
   },
   "dependencies": {
     "adapterjs": "^0.15.4",
-    "rtcmulticonnection": "^3.6.8",
+    "rtcmulticonnection": "^3.7.0",
     "url-parse": "^1.4.7",
-    "vue": "^2.6.10"
+    "vue": "^2.6.11"
   },
   "repository": {
     "type": "git",
@@ -41,10 +41,10 @@
     "file-loader": "^0.9.0",
     "function-bind": "^1.0.2",
     "html-webpack-plugin": "^2.8.1",
-    "lodash": "^4.17.11",
+    "lodash": "^4.17.15",
     "vue-loader": "^11.1.4",
     "vue-style-loader": "^1.0.0",
-    "vue-template-compiler": "^2.6.10",
+    "vue-template-compiler": "^2.6.11",
     "webpack": "^2.2.0",
     "webpack-dev-server": "^2.11.5",
     "webpack-merge": "^0.14.1"
