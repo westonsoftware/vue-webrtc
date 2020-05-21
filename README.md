@@ -89,8 +89,21 @@ npm run demo
 
 | Version           | Notes                                                                   |
 | -------------- | ----------------------------------------------------------------------- |
+| 1.2.1           | Added Vue CLI sample, npm audit fixes                                       |
 | 1.2.0           | Added the Screen Share button                                       |
 
+## Quick Start with Vue CLI
+```
+vue create sample
+cd sample
+yarn install
+npm install vue-webrtc --save
+```
+Now open the App.vue file and add the code in the Usage section above.
+```
+npm run serve
+```
+See the /sample folder
 
 ## Roadmap
 There are many more features provided by the RTCMultiConnection library that we'd like to support, including:
