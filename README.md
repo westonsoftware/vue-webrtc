@@ -6,7 +6,8 @@ WebRTC component designed for Vue.js ... See the [DEMO](https://westonsoftware.g
 <p align="center">
     <img src="assets/screenshot.png">
 </p>
-[![Join the chat at https://gitter.im/westonsoftware/vue-webrtc](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/westonsoftware/vue-webrtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+[![Join](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/westonsoftware/vue-webrtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![npm](https://img.shields.io/npm/v/vue-webrtc.svg)](https://www.npmjs.com/package/vue-webrtc)
 [![npm](https://img.shields.io/npm/dm/vue-webrtc.svg)](https://www.npmjs.com/package/vue-webrtc)
 ![Contributions welcome](https://img.shields.io/badge/contributions-welcome-orange.svg)
