@@ -14,7 +14,7 @@
                       :roomId="roomId"
                       v-on:joined-room="logEvent"
                       v-on:left-room="logEvent"
-                      v-on:open-room="logEvent"
+                      v-on:opened-room="logEvent"
                       v-on:share-started="logEvent"
                       v-on:share-stopped="logEvent"
                       @error="onError" />
