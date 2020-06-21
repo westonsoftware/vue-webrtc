@@ -60,6 +60,8 @@ npm run demo
 | enableAudio      | boolean  | true | enables audio on join      |
 | enableVideo      | boolean  | true | enables video on join      |
 | enableLogs       | boolean  | false | enables webrtc console logs    |
+| stunServer       | string  | null | set STUN server url to 'stun:yourSTUN.com:port'    |
+| turnServer       | string  | null | set TURN server url to 'username@password%turn:yourTURN.com:port'    |
 
 ### Events
 
@@ -90,6 +92,7 @@ npm run demo
 
 | Version           | Notes                                                                   |
 | -------------- | ----------------------------------------------------------------------- |
+| 1.2.2           | Added stunServer and turnServer properties                                       |
 | 1.2.1           | Added Vue CLI sample, npm audit fixes                                       |
 | 1.2.0           | Added the Screen Share button                                       |
 
