@@ -202,6 +202,14 @@ exports.default = {
     enableLogs: {
       type: Boolean,
       default: false
+    },
+    stunServer: {
+      type: String,
+      default: null
+    },
+    turnServer: {
+      type: String,
+      default: null
     }
   },
   watch: {},
@@ -220,6 +228,25 @@ exports.default = {
       OfferToReceiveAudio: this.enableAudio,
       OfferToReceiveVideo: this.enableVideo
     };
+    if (this.stunServer !== null || this.turnServer !== null) {
+      this.rtcmConnection.iceServers = [];
+    }
+    if (this.stunServer !== null) {
+      this.rtcmConnection.iceServers.push({
+        urls: this.stunServer
+      });
+    }
+    if (this.turnServer !== null) {
+      var parse = this.turnServer.split('%');
+      var username = parse[0].split('@')[0];
+      var password = parse[0].split('@')[1];
+      var turn = parse[1];
+      this.rtcmConnection.iceServers.push({
+        urls: turn,
+        credential: password,
+        username: username
+      });
+    }
     this.rtcmConnection.onstream = function (stream) {
       var found = that.videoList.find(function (video) {
         return video.id === stream.streamid;

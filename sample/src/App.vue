@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <img alt="Vue logo" src="./assets/logo.png">
-    <vue-webrtc ref="webrtc" width="100%" roomId="roomId"/>
-    ANDY
+    <vue-webrtc ref="webrtc" width="100%" roomId="sample-room"/>
+    Room: sample-room
   </div>
 </template>
 
