@@ -1,12 +1,23 @@
 <template>
-  <div class="video-list" >
-      <div v-for="item in videoList"
-          v-bind:video="item"
-          v-bind:key="item.id"
-          class="video-item">
-        <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
+  <div class="flex-container">
+    <div class="video-list" >
+        <div v-for="item in videoList"
+            v-bind:video="item"
+            v-bind:key="item.id"
+            class="video-item">
+          <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
+        </div>
+    </div>
+    <div class="chat-list">
+      <div v-for="(chat,index) in messages"
+           v-bind:key="chat.userid">
+           <span>{{chat.message}}</span>
       </div>
-  </div>
+      <input v-model="message" type="text" name="message" value="">
+      <button @click="sendMessage()" type="button" name="button">Send</button>
+    </div>
+
+ </div>
 </template>
 
 <script>
@@ -261,5 +272,16 @@
   .video-item {
     background: #c5c4c4;
     display: inline-block;
+  }
+
+  .flex-container {
+    display: flex
+  }
+  .flex-container > div {
+    margin: 5px;
+  }
+  .chat-list {
+    display: flex;
+    flex-direction: column;
   }
 </style>
