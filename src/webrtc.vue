@@ -1,5 +1,5 @@
 <template>
-  <div class="video-list" > 
+  <div class="video-list" >
       <div v-for="item in videoList"
           v-bind:video="item"
           v-bind:key="item.id"
@@ -23,6 +23,8 @@
         localVideo: null,
         videoList: [],
         canvas: null,
+        messages: [],
+        message: null
       };
     },
     props: {
@@ -54,6 +56,10 @@
         type: Boolean,
         default: true
       },
+      enableData: {
+        type: Boolean,
+        default: true
+      },
       enableLogs: {
         type: Boolean,
         default: false
@@ -78,7 +84,8 @@
       this.rtcmConnection.enableLogs = this.enableLogs;
       this.rtcmConnection.session = {
         audio: this.enableAudio,
-        video: this.enableVideo
+        video: this.enableVideo,
+        data: this.enableData
       };
       this.rtcmConnection.sdpConstraints.mandatory = {
         OfferToReceiveAudio: this.enableAudio,
@@ -120,7 +127,7 @@
           }
         }
 
-        setTimeout(function(){ 
+        setTimeout(function(){
           for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
             if (that.$refs.videos[i].id === stream.streamid)
             {
@@ -129,7 +136,7 @@
             }
           }
         }, 1000);
-        
+
         that.$emit('joined-room', stream.streamid);
       };
       this.rtcmConnection.onstreamended = function (stream) {
@@ -142,8 +149,21 @@
         that.videoList = newList;
         that.$emit('left-room', stream.streamid);
       };
+      this.rtcmConnection.onmessage = function(stream){
+        this.messages.push({
+          message: stream.data,
+          userid: stream.userid
+        });
+      };
     },
     methods: {
+      sendMessage(){
+        var message = this.message
+        this.rtcmConnection.send(message);
+        this.$emit('sent-message',message);
+        //reset message
+        this.message = null
+      },
       join() {
          var that = this;
          this.rtcmConnection.openOrJoin(this.roomId, function (isRoomExist, roomid) {
