@@ -150,10 +150,11 @@
         that.$emit('left-room', stream.streamid);
       };
       this.rtcmConnection.onmessage = function(stream){
-        this.messages.push({
+        that.messages.push({
           message: stream.data,
           userid: stream.userid
         });
+        that.$emit('received-message',stream.data);
       };
     },
     methods: {
