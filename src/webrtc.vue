@@ -8,7 +8,7 @@
           <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
         </div>
     </div>
-    <div class="chat-list">
+    <div v-if="enableChat" class="chat-list">
       <div v-for="(chat,index) in messages"
            v-bind:key="chat.userid">
            <span>{{chat.message}}</span>
@@ -67,9 +67,9 @@
         type: Boolean,
         default: true
       },
-      enableData: {
+      enableChat: {
         type: Boolean,
-        default: true
+        default: false
       },
       enableLogs: {
         type: Boolean,
@@ -96,7 +96,7 @@
       this.rtcmConnection.session = {
         audio: this.enableAudio,
         video: this.enableVideo,
-        data: this.enableData
+        data: this.enableChat
       };
       this.rtcmConnection.sdpConstraints.mandatory = {
         OfferToReceiveAudio: this.enableAudio,
@@ -158,6 +158,11 @@
           }
         });
         that.videoList = newList;
+        //clear messages
+        if(this.enableChat){
+          this.clearMessages(stream)
+        }
+
         that.$emit('left-room', stream.streamid);
       };
       this.rtcmConnection.onmessage = function(stream){
@@ -169,11 +174,17 @@
       };
     },
     methods: {
+      clearMessages(stream){
+        var newList = this.messages.filter(function(item){
+          return item.userid !== stream.userid
+        });
+        this.messages = newList
+      },
       sendMessage(){
         var message = this.message
         this.rtcmConnection.send(message);
         this.$emit('sent-message',message);
-        //reset message
+        //reset message input
         this.message = null
       },
       join() {
