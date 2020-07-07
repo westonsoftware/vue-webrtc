@@ -182,10 +182,14 @@
       },
       sendMessage(){
         var message = this.message
-        this.rtcmConnection.send(message);
-        this.$emit('sent-message',message);
-        //reset message input
-        this.message = null
+        if(message.length < 2){
+          console.log('message length less')
+        }else{
+          this.rtcmConnection.send(message);
+          this.$emit('sent-message',message);
+          //reset message input
+          this.message = null
+        }
       },
       join() {
          var that = this;
