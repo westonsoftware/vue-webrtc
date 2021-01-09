@@ -1,12 +1,23 @@
 <template>
-  <div class="video-list" > 
-      <div v-for="item in videoList"
-          v-bind:video="item"
-          v-bind:key="item.id"
-          class="video-item">
-        <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
+  <div class="flex-container">
+    <div class="video-list" >
+        <div v-for="item in videoList"
+            v-bind:video="item"
+            v-bind:key="item.id"
+            class="video-item">
+          <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
+        </div>
+    </div>
+    <div v-if="enableChat" class="chat-list">
+      <div v-for="(chat,index) in messages"
+           v-bind:key="chat.userid">
+           <span>{{chat.message}}</span>
       </div>
-  </div>
+      <input v-model="message" type="text" name="message" value="">
+      <button @click="sendMessage()" type="button" name="button">Send</button>
+    </div>
+
+ </div>
 </template>
 
 <script>
@@ -23,6 +34,8 @@
         localVideo: null,
         videoList: [],
         canvas: null,
+        messages: [],
+        message: null
       };
     },
     props: {
@@ -54,6 +67,10 @@
         type: Boolean,
         default: true
       },
+      enableChat: {
+        type: Boolean,
+        default: false
+      },
       enableLogs: {
         type: Boolean,
         default: false
@@ -78,7 +95,8 @@
       this.rtcmConnection.enableLogs = this.enableLogs;
       this.rtcmConnection.session = {
         audio: this.enableAudio,
-        video: this.enableVideo
+        video: this.enableVideo,
+        data: this.enableChat
       };
       this.rtcmConnection.sdpConstraints.mandatory = {
         OfferToReceiveAudio: this.enableAudio,
@@ -120,7 +138,7 @@
           }
         }
 
-        setTimeout(function(){ 
+        setTimeout(function(){
           for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
             if (that.$refs.videos[i].id === stream.streamid)
             {
@@ -129,7 +147,7 @@
             }
           }
         }, 1000);
-        
+
         that.$emit('joined-room', stream.streamid);
       };
       this.rtcmConnection.onstreamended = function (stream) {
@@ -140,10 +158,39 @@
           }
         });
         that.videoList = newList;
+        //clear messages
+        if(this.enableChat){
+          this.clearMessages(stream)
+        }
+
         that.$emit('left-room', stream.streamid);
+      };
+      this.rtcmConnection.onmessage = function(stream){
+        that.messages.push({
+          message: stream.data,
+          userid: stream.userid
+        });
+        that.$emit('received-message',stream.data);
       };
     },
     methods: {
+      clearMessages(stream){
+        var newList = this.messages.filter(function(item){
+          return item.userid !== stream.userid
+        });
+        this.messages = newList
+      },
+      sendMessage(){
+        var message = this.message
+        if(message.length < 2){
+          console.log('message length less')
+        }else{
+          this.rtcmConnection.send(message);
+          this.$emit('sent-message',message);
+          //reset message input
+          this.message = null
+        }
+      },
       join() {
          var that = this;
          this.rtcmConnection.openOrJoin(this.roomId, function (isRoomExist, roomid) {
@@ -240,5 +287,16 @@
   .video-item {
     background: #c5c4c4;
     display: inline-block;
+  }
+
+  .flex-container {
+    display: flex
+  }
+  .flex-container > div {
+    margin: 5px;
+  }
+  .chat-list {
+    display: flex;
+    flex-direction: column;
   }
 </style>
