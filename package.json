@@ -19,6 +19,7 @@
   "dependencies": {
     "adapterjs": "^0.15.4",
     "rtcmulticonnection": "^3.7.0",
+    "socket.io-client": "^2.3.1",
     "url-parse": "^1.4.7",
     "vue": "^2.6.11"
   },
