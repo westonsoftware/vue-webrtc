@@ -1,38 +1,40 @@
 <template>
-  <div class="video-list" > 
-      <div v-for="item in videoList"
-          v-bind:video="item"
-          v-bind:key="item.id"
-          class="video-item">
-        <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
-      </div>
+  <div class="video-list">
+    <div v-for="item in videoList"
+         v-bind:video="item"
+         v-bind:key="item.id"
+         class="video-item">
+      <video controls autoplay playsinline ref="videos" :height="cameraHeight" :muted="item.muted" :id="item.id"></video>
+    </div>
   </div>
 </template>
 
 <script>
-  import RTCMultiConnection from 'rtcmulticonnection';
-  require('adapterjs');
+  const io = require("socket.io-client");
+  const SimpleSignalClient = require('simple-signal-client');
+
   export default {
     name: 'vue-webrtc',
     components: {
-      RTCMultiConnection
     },
     data() {
       return {
-        rtcmConnection: null,
-        localVideo: null,
+        signalClient: null,
         videoList: [],
         canvas: null,
+        socket: null
       };
     },
     props: {
       roomId: {
         type: String,
-        default: 'public-room'
+        default: 'public-room-v2'
       },
       socketURL: {
         type: String,
-        default: 'https://rtcmulticonnection.herokuapp.com:443/'
+        default: 'https://weston-vue-webrtc-lobby.azurewebsites.net'
+        //default: 'https://localhost:3000'
+        //default: 'https://192.168.1.201:3000'
       },
       cameraHeight: {
         type: [Number, String],
@@ -58,11 +60,13 @@
         type: Boolean,
         default: false
       },
-      stunServer: {
-        type: String,
-        default: null
+      peerOptions: {
+        type: Object,  // NOTE: use these options: https://github.com/feross/simple-peer
+        default() {
+          return {};
+        }
       },
-      turnServer: {
+      deviceId: {
         type: String,
         default: null
       }
@@ -70,99 +74,116 @@
     watch: {
     },
     mounted() {
-      var that = this;
-
-      this.rtcmConnection = new RTCMultiConnection();
-      this.rtcmConnection.socketURL = this.socketURL;
-      this.rtcmConnection.autoCreateMediaElement = false;
-      this.rtcmConnection.enableLogs = this.enableLogs;
-      this.rtcmConnection.session = {
-        audio: this.enableAudio,
-        video: this.enableVideo
-      };
-      this.rtcmConnection.sdpConstraints.mandatory = {
-        OfferToReceiveAudio: this.enableAudio,
-        OfferToReceiveVideo: this.enableVideo
-      };
-      if ((this.stunServer !== null) || (this.turnServer !== null)) {
-        this.rtcmConnection.iceServers = []; // clear all defaults
-      }
-      if (this.stunServer !== null) {
-        this.rtcmConnection.iceServers.push({
-          urls: this.stunServer
+    },
+    methods: {
+      async join() {
+        var that = this;
+        this.log('join');
+        this.socket = io(this.socketURL, { rejectUnauthorized: false, transports: ['websocket'] });
+        this.signalClient = new SimpleSignalClient(this.socket);
+        let constraints = {
+          video: that.enableVideo,
+          audio: that.enableAudio
+        };
+        if (that.deviceId && that.enableVideo) {
+          constraints.video = { deviceId: { exact: that.deviceId } };
+        }
+        const localStream = await navigator.mediaDevices.getUserMedia(constraints);
+        this.log('opened', localStream);
+        this.joinedRoom(localStream, true);
+        this.signalClient.once('discover', (discoveryData) => {
+          that.log('discovered', discoveryData)
+          async function connectToPeer(peerID) {
+            if (peerID == that.socket.id) return;
+            try {
+              that.log('Connecting to peer');
+              const { peer } = await that.signalClient.connect(peerID, that.roomId, that.peerOptions);
+              that.videoList.forEach(v => {
+                if (v.isLocal) {
+                  that.onPeer(peer, v.stream);
+                }
+              })
+            } catch (e) {
+              that.log('Error connecting to peer');
+            }
+          }
+          discoveryData.peers.forEach((peerID) => connectToPeer(peerID));
+          that.$emit('opened-room', that.roomId);
         });
-      }
-      if (this.turnServer !== null) {
-        var parse = this.turnServer.split('%');
-        var username = parse[0].split('@')[0];
-        var password = parse[0].split('@')[1];
-        var turn = parse[1];
-        this.rtcmConnection.iceServers.push({
-          urls: turn,
-          credential: password,
-          username: username
+        this.signalClient.on('request', async (request) => {
+          that.log('requested', request)
+          const { peer } = await request.accept({}, that.peerOptions)
+          that.log('accepted', peer);
+          that.videoList.forEach(v => {
+            if (v.isLocal) {
+              that.onPeer(peer, v.stream);
+            }
+          })
+        })
+        this.signalClient.discover(that.roomId);
+      },
+      onPeer(peer, localStream) {
+        var that = this;
+        that.log('onPeer');
+        peer.addStream(localStream);
+        peer.on('stream', (remoteStream) => {
+          that.joinedRoom(remoteStream, false);
+          peer.on('close', () => {
+            var newList = [];
+            that.videoList.forEach(function (item) {
+              if (item.id !== remoteStream.id) {
+                newList.push(item);
+              }
+            });
+            that.videoList = newList;
+            that.$emit('left-room', remoteStream.id);
+          });
+          peer.on('error', (err) => {
+            that.log('peer error ', err);
+          });
         });
-      }
-      this.rtcmConnection.onstream = function (stream) {
+      },
+      joinedRoom(stream, isLocal) {
+        var that = this;
         let found = that.videoList.find(video => {
-          return video.id === stream.streamid
+          return video.id === stream.id
         })
         if (found === undefined) {
           let video = {
-            id: stream.streamid,
-            muted: stream.type === 'local'
+            id: stream.id,
+            muted: isLocal,
+            stream: stream,
+            isLocal: isLocal
           };
 
           that.videoList.push(video);
-
-          if (stream.type === 'local') {
-            that.localVideo = video;
-          }
         }
 
-        setTimeout(function(){ 
+        setTimeout(function () {
           for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
-            if (that.$refs.videos[i].id === stream.streamid)
-            {
-              that.$refs.videos[i].srcObject = stream.stream;
+            if (that.$refs.videos[i].id === stream.id) {
+              that.$refs.videos[i].srcObject = stream;
               break;
             }
           }
-        }, 1000);
-        
-        that.$emit('joined-room', stream.streamid);
-      };
-      this.rtcmConnection.onstreamended = function (stream) {
-        var newList = [];
-        that.videoList.forEach(function (item) {
-          if (item.id !== stream.streamid) {
-            newList.push(item);
-          }
-        });
-        that.videoList = newList;
-        that.$emit('left-room', stream.streamid);
-      };
-    },
-    methods: {
-      join() {
-         var that = this;
-         this.rtcmConnection.openOrJoin(this.roomId, function (isRoomExist, roomid) {
-          if (isRoomExist === false && that.rtcmConnection.isInitiator === true) {
-            that.$emit('opened-room', roomid);
-          }
-        });
+        }, 500);
+
+        that.$emit('joined-room', stream.id);
       },
       leave() {
-        this.rtcmConnection.attachStreams.forEach(function (localStream) {
-          localStream.stop();
-        });
+        this.videoList.forEach(v => v.stream.getTracks().forEach(t => t.stop()));
         this.videoList = [];
+        this.signalClient.peers().forEach(peer => peer.removeAllListeners())
+        this.signalClient.destroy();
+        this.signalClient = null;
+        this.socket.destroy();
+        this.socket = null;
       },
       capture() {
         return this.getCanvas().toDataURL(this.screenshotFormat);
       },
       getCanvas() {
-        let video = this.getCurrentVideo();
+        let video = this.$refs.videos[0];
         if (video !== null && !this.ctx) {
           let canvas = document.createElement('canvas');
           canvas.height = video.clientHeight;
@@ -174,53 +195,27 @@
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         return canvas;
       },
-      getCurrentVideo() {
-        if (this.localVideo === null) {
-          return null;
-        }
-        for (var i = 0, len = this.$refs.videos.length; i < len; i++) {
-          if (this.$refs.videos[i].id === this.localVideo.id)
-            return this.$refs.videos[i];
-        }
-        return null;
-      },
-      shareScreen() {
+      async shareScreen() {
         var that = this;
-        if (navigator.getDisplayMedia || navigator.mediaDevices.getDisplayMedia) {
-          function addStreamStopListener(stream, callback) {
-            var streamEndedEvent = 'ended';
-            if ('oninactive' in stream) {
-                streamEndedEvent = 'inactive';
-            }
-            stream.addEventListener(streamEndedEvent, function() {
-                callback();
-                callback = function() {};
-            }, false);
-          }
+        if (navigator.mediaDevices == undefined) {
+          that.log('Error: https is required to load cameras');
+          return;
+        }
 
-          function onGettingSteam(stream) {
-            that.rtcmConnection.addStream(stream);
-            that.$emit('share-started', stream.streamid);
-
-            addStreamStopListener(stream, function() {
-              that.rtcmConnection.removeStream(stream.streamid);
-              that.$emit('share-stopped', stream.streamid);
-            });
-          }
-
-          function getDisplayMediaError(error) {
-            console.log('Media error: ' + JSON.stringify(error));
-          }
-
-          if (navigator.mediaDevices.getDisplayMedia) {
-            navigator.mediaDevices.getDisplayMedia({video: true, audio: false}).then(stream => {
-              onGettingSteam(stream);
-            }, getDisplayMediaError).catch(getDisplayMediaError);
-          }
-          else if (navigator.getDisplayMedia) {
-            navigator.getDisplayMedia({video: true}).then(stream => {
-              onGettingSteam(stream);
-            }, getDisplayMediaError).catch(getDisplayMediaError);
+        try {
+          var screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+          this.joinedRoom(screenStream, true);
+          that.$emit('share-started', screenStream.id);
+          that.signalClient.peers().forEach(p => that.onPeer(p, screenStream));
+        } catch (e) {
+          that.log('Media error: ' + JSON.stringify(e));
+        }
+      },
+      log(message, data) {
+        if (this.enableLogs) {
+          console.log(message);
+          if (data != null) {
+            console.log(data);
           }
         }
       }
@@ -231,6 +226,10 @@
   .video-list {
     background: whitesmoke;
     height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    flex-wrap: wrap;
   }
 
     .video-list div {

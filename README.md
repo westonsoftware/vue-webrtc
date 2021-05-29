@@ -17,6 +17,9 @@ See [this](http://caniuse.com/#feat=stream)
 for browser compatibility.
 
 
+## Upgrading from V1
+V2 of this component is mostly compatible with V1 but it completely replaces the internals with a new signaling server and a new SimplePeer client.  Due to this, you will need to set the [socketUrl] to a new instance of the included .\vue-webrtc-lobby socket server.  There is a default instance that you are welcome to use but you should run your own.  If you are using STUN and TURN settings, you will now need to set those in [peerOptions] .
+
 ## Installation
 
 ```
@@ -53,15 +56,15 @@ npm run demo
 | prop             | type    | default      | notes                     |
 | ---------------- | ------- | ------------ | ------------------------- |
 | roomId           | string  | 'public-room' | id of the room to join   |
-| socketURL        | string  | '' | URL of the signaling server   |
+| socketURL        | string  | 'https://weston-vue-webrtc-lobby.azurewebsites.net' | URL of the signaling server, use this default or run your own, see .\vue-webrtc-lobby   |
 | cameraHeight     | number  | 160          | height of video element   |
 | autoplay         | boolean | true         | autoplay attribute        |
 | screenshotFormat | string  | 'image/jpeg' | format of screenshot      |
 | enableAudio      | boolean  | true | enables audio on join      |
 | enableVideo      | boolean  | true | enables video on join      |
 | enableLogs       | boolean  | false | enables webrtc console logs    |
-| stunServer       | string  | null | set STUN server url to 'stun:yourSTUN.com:port'    |
-| turnServer       | string  | null | set TURN server url to 'username@password%turn:yourTURN.com:port'    |
+| deviceId       | string  | null | set video device id to a camera from navigator.mediaDevices.enumerateDevices()    |
+| peerOptions       | string  | { } | set SimplePeer options such as STUN and TURN from here [https://github.com/feross/simple-peer](https://github.com/feross/simple-peer)    |
 
 ### Events
 
@@ -92,6 +95,7 @@ npm run demo
 
 | Version           | Notes                                                                   |
 | -------------- | ----------------------------------------------------------------------- |
+| 2.0.0           | Replaced signaling server and webrtc library with SimplePeer 
 | 1.2.2           | Added stunServer and turnServer properties                                       |
 | 1.2.1           | Added Vue CLI sample, npm audit fixes                                       |
 | 1.2.0           | Added the Screen Share button                                       |
@@ -110,8 +114,8 @@ npm run serve
 See the /sample folder
 
 ## Roadmap
-There are many more features provided by the RTCMultiConnection library that we'd like to support, including:
-- Camera selection (we currently use the default camera)
+V2 was a major internal ugrade, some other features that we would like to see added are:
+- Chat component
 - Audio selection
 - WebRTC data events
 
@@ -126,11 +130,14 @@ MIT
 
 Author: [@AndyWeston on GitHub at vue-webrtc](https://github.com/westonsoftware)
 
-This project is based off of the excellent work found at WebRTC Experiments:
-https://www.rtcmulticonnection.org/
+This project is based off of:
+
+[SimplePeer](https://github.com/feross/simple-peer)
+
+[SimpleSignal](https://github.com/t-mullen/simple-signal)
 
 
-The Vue.js work is based on this camera component:  
+The Vue.js work was based on this camera component:  
 [@vinceg vue-web-cam](https://github.com/vinceg/vue-web-cam)
 
 

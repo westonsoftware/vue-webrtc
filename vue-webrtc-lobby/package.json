@@ -1,0 +1,21 @@
+{
+  "name": "vue-webrtc-lobby",
+  "version": "1.0.0",
+  "description": "vue-webrtc-lobby",
+  "author": {
+    "name": "Andy Weston",
+    "email": "aweston@westonsoftware.com",
+    "url": "https://github.com/westonsoftware"
+  },
+  "scripts": {
+    "start": "node server -ssl"
+  },
+  "engines": {
+    "node": "~14.16.x"
+  },
+  "dependencies": {
+    "express": "^4.17.1",
+    "simple-signal-server": "^3.0.0",
+    "socket.io": "^4.1.2"
+  }
+}
