@@ -1,8 +1,11 @@
 {
   "name": "vue-webrtc",
-  "version": "1.2.2",
+  "version": "2.0.0",
   "description": "WebRTC video component for Vue.js",
   "main": "dist/index.js",
+  "files": [
+    "dist/index.js"
+  ],
   "author": {
     "name": "Andy Weston",
     "email": "aweston@westonsoftware.com",
@@ -14,13 +17,11 @@
     "builddemo": "cross-env NODE_ENV=production webpack --progress --hide-modules --config demo/webpack.config.js",
     "demo": "cross-env NODE_ENV=production webpack-dev-server --open --config demo/webpack.config.js",
     "dev": "cross-env NODE_ENV=development webpack-dev-server --hot --open --port 31415 --config demo/webpack.config.js",
-    "devs": "cross-env NODE_ENV=development webpack-dev-server --hot --open --https --host 192.168.1.64 --port 31415 --config demo/webpack.config.js"
+    "devs": "cross-env NODE_ENV=development webpack-dev-server --hot --open --https --host 192.168.1.201 --port 31415 --config demo/webpack.config.js"
   },
   "dependencies": {
-    "adapterjs": "^0.15.4",
-    "rtcmulticonnection": "^3.7.0",
-    "socket.io-client": "^2.3.1",
-    "url-parse": "^1.4.7",
+    "simple-signal-client": "^3.0.0",
+    "socket.io-client": "^4.1.2",
     "vue": "^2.6.11"
   },
   "repository": {

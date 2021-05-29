@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "serve": "vue-cli-service serve",
+    "serve": "vue-cli-service serve --https true ",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "core-js": "^3.13.1",
     "vue": "^2.6.11",
-    "vue-webrtc": "^1.2.0"
+    "vue-webrtc": "^2.0.0"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^4.3.0",
