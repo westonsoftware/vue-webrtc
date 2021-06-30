@@ -1,17 +1,18 @@
 <template>
     <div class="video-meeting">
-    <div class="video-list">
-        <div v-for="item, key in videoList"
-             v-bind:video="item"
-             v-bind:key="item.id"
-             :class="'pos_'+key"
-             class="video-item">
-            <video @click="array_move(key)" autoplay playsinline ref="videos" :muted="item.muted" :id="item.id"></video>
+        <div class="video-list" style="margin-bottom:40px;">
+            <div v-for="item, key in videoList"
+                 v-bind:video="item"
+                 v-bind:key="item.id"
+                 :class="'pos_'+key"
+                 class="video-item">
+                <video @click="array_move(key)" autoplay playsinline ref="videos" :muted="item.muted" :id="item.id"></video>
+            </div>
         </div>
-    </div>
-      <button v-if="defaultButtons" @click="join">{{button.join}}</button>
-      <button v-if="defaultButtons" @click="leave">{{button.leave}}</button>
-      <button v-if="!screenSharing && defaultButtons" @click="shareScreen">{{button.shareScreen}}</button>
+        <button v-if="defaultButtons" @click="join">{{button.join}}</button>
+        <button v-if="defaultButtons" @click="leave">{{button.leave}}</button>
+        <button v-if="!screenSharing && defaultButtons" @click="shareScreen">{{button.shareScreen}}</button>
+        <button v-if="cams.length > 1" @click="switchCam(item)">switchCam</button>
     </div>
 </template>
 
@@ -24,11 +25,12 @@
         },
         data() {
             return {
-                screenSharing:false,
+                screenSharing: false,
                 signalClient: null,
                 videoList: [],
                 canvas: null,
-                socket: null
+                socket: null,
+                cams: []
             };
         },
         props: {
@@ -38,7 +40,7 @@
             },
             button: {
                 type: Object,
-                default:() => {
+                default: () => {
                     return {
                         join: 'Join',
                         leave: 'Leave',
@@ -48,9 +50,9 @@
             },
             socketURL: {
                 type: String,
-                default: 'https://weston-vue-webrtc-lobby.azurewebsites.net'
+                //default: 'https://weston-vue-webrtc-lobby.azurewebsites.net'
                 //default: 'https://localhost:3000'
-                //default: 'https://192.168.1.201:3000'
+                default: 'https://192.168.178.72:3000'
             },
             cameraHeight: {
                 type: [Number, String],
@@ -94,6 +96,23 @@
         watch: {
         },
         mounted() {
+            var that = this;
+            navigator.mediaDevices.enumerateDevices()
+                .then(function (devices) {
+                    devices.forEach(function (device) {
+                        if (device.kind == 'videoinput') {
+                            that.cams.push(device);
+
+
+                            console.log(device.kind + ": " + device.label +
+                                " id = " + device.deviceId + "added to cams data");
+                        }
+                    });
+                    if (!that.deviceId) {
+                        that.activeDeviceId = that.cams[0].deviceId
+                    }
+                })
+
         },
         methods: {
             array_move(old_index) {
@@ -113,7 +132,7 @@
                 }
                 arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
                 console.log("N", arr)
-                console.log("i",old_index)
+                console.log("i", old_index)
                 this.videoList = arr; // for testing purposes
             },
             async join() {
@@ -125,8 +144,8 @@
                     video: that.enableVideo,
                     audio: that.enableAudio
                 };
-                if (that.deviceId && that.enableVideo) {
-                    constraints.video = { deviceId: { exact: that.deviceId } };
+                if (that.activeDeviceId && that.enableVideo) {
+                    constraints.video = { deviceId: { exact: that.activeDeviceId } };
                 }
                 const localStream = await navigator.mediaDevices.getUserMedia(constraints);
                 this.log('opened', localStream);
@@ -167,7 +186,7 @@
                 that.log('onPeer');
                 peer.addStream(localStream);
                 peer.on('track', (track, stream) => {
-                    track.addEventListener('mute', (e) => {
+                    track.addEventListener('mute', () => {
                         this.videoList = this.videoList.filter((video) => {
                             return video.id !== stream.id;
                         })
@@ -211,11 +230,6 @@
                     for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
                         if (that.$refs.videos[i].id === stream.id) {
                             that.$refs.videos[i].srcObject = stream;
-                            //setTimeout(function () {
-                            //    if (isLocal && !isScreenShare) {
-                            //        that.$refs.videos[i].requestPictureInPicture();
-                            //    }
-                            //}, 500);
                             break;
                         }
                     }
@@ -223,7 +237,7 @@
 
                 if (!isLocal) {
                     var arr = [...that.videoList]
-                    var key = arr.findIndex((video, key) => {
+                    var key = arr.findIndex((video) => {
                         video.id == stream.id
                     })
                     console.log("Key", key)
@@ -244,6 +258,71 @@
             },
             capture() {
                 return this.getCanvas().toDataURL(this.screenshotFormat);
+            },
+            switchCam(item) {
+
+                this.videoList.forEach(v => {
+                    if (v.isLocal) {
+                        console.log("v", cams, v.stream, v.stream.getTracks())
+                    }
+                })
+
+                var cams = [...this.cams]
+                var otherCam = cams.filter(cam => cam.deviceId !== this.activeDeviceId)[0].deviceId;
+                console.log('thisDeviceId', this.activeDeviceId);
+                console.log('filter', otherCam)
+
+                navigator.mediaDevices
+                    .getUserMedia({
+                        video: {
+                            deviceId: {
+                                exact: otherCam
+                            }
+                        }
+                    })
+                    .then((stream) => {
+                        var oldStreamIndex = this.videoList.findIndex(vid => vid.isLocal && !vid.isScreenShare);
+                        console.log("oldIndex", oldStreamIndex, this.videoList[oldStreamIndex].stream, stream)
+                        this.videoList[oldStreamIndex].stream.getTracks().forEach(t => t.stop())
+                        var videoList = [...this.videoList];
+                        videoList.splice(oldStreamIndex, 1);
+                        var newVideo = {
+                            id: stream.id,
+                            active: true,
+                            muted: true,
+                            stream: stream,
+                            isLocal: true,
+                            isScreenShare: false
+                        }
+                        videoList.push(newVideo)
+                        this.videoList = videoList;
+                        var that = this;
+                        setTimeout(function () {
+                            for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
+                                if (that.$refs.videos[i].id === stream.id) {
+                                    that.$refs.videos[i].srcObject = stream;
+                                    break;
+                                }
+                            }
+                        }, 500);
+
+                        console.log("newIndex", oldStreamIndex, this.videoList[oldStreamIndex].stream)
+                        let videoTrack = stream.getVideoTracks()[0];
+                        this.signalClient.peers().forEach(p => {
+                            console.log("p", p)
+                            var sender = p._pc.getSenders().find(function (s) {
+                                console.log("s", s.track)
+                                return s.track.kind == videoTrack.kind;
+                            });
+                            console.log('found sender:', sender);
+                            sender.replaceTrack(videoTrack);
+                        });
+
+                        this.activeDeviceId = otherCam
+                    })
+                    .catch(function (err) {
+                        console.error('Error happens:', err, item);
+                    });
             },
             removeScreensharing(e) {
                 console.log('rmScreen', e)
@@ -284,7 +363,6 @@
                     that.$emit('share-started', screenStream.id);
                     that.signalClient.peers().forEach(p => {
                         this.onPeer(p, screenStream)
-                        console.log("thisPeer", key)
                     });
 
                 } catch (e) {
@@ -321,14 +399,17 @@
         display: inline-block;
         width: 280px;
     }
-    .video-item.pos_0 {
-        width: 100vw;
-        height: 70vh;
-    }
-    .video-item.pos_0 video{
-        width: 100%;
-        height: 100%;
-    }
+
+        .video-item.pos_0 {
+            width: 100vw;
+            height: 70vh;
+        }
+
+            .video-item.pos_0 video {
+                width: 100%;
+                height: 100%;
+            }
+
     video {
         width: 100%;
         height: 160px;
