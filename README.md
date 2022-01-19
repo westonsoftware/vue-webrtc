@@ -1,10 +1,10 @@
 
 # vue-webrtc
 
-WebRTC component designed for Vue.js ... See the [DEMO](https://westonsoftware.github.io/vue-webrtc/)
+WebRTC component designed for Vue 3 ... See the [DEMO](https://westonsoftware.github.io/vue-webrtc/)
 
 <p align="center">
-    <img src="assets/screenshot.png">
+    <img src="docs/assets/screenshot.png">
 </p>
 
 [![Join](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/westonsoftware/vue-webrtc?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -16,16 +16,11 @@ WebRTC component designed for Vue.js ... See the [DEMO](https://westonsoftware.g
 See [this](http://caniuse.com/#feat=stream)
 for browser compatibility.
 
-
-## Upgrading from V1
-V2 of this component is mostly compatible with V1 but it completely replaces the internals with a new signaling server and a new SimplePeer client.  Due to this, you will need to set the [socketUrl] to a new instance of the included .\vue-webrtc-lobby socket server.  There is a default instance that you are welcome to use but you should run your own.  If you are using STUN and TURN settings, you will now need to set those in [peerOptions] .
-
 ## Installation
 
 ```
 npm install vue-webrtc --save
 
-yarn add vue-webrtc
 ```
 
 ## Usage
@@ -33,22 +28,30 @@ yarn add vue-webrtc
 ```javascript
 import Vue from 'vue'
 import WebRTC from 'vue-webrtc'
-
 Vue.use(WebRTC)
+
 // or
-import {WebRTC} from 'vue-webrtc'
-Vue.component(WebRTC.name, WebRTC)
+import { VueWebRTC } from 'vue-webrtc'
+Vue.component(VueWebRTC.name, VueWebRTC)
+
+// or
+import { VueWebRTC } from 'vue-webrtc';
+export default {
+    name: 'App',
+    components: {
+        'vue-webrtc': VueWebRTC
+    },
+    ...
 
 // template
-<vue-webrtc width="100%" roomId="roomId">
+<vue-webrtc ref="webrtc" width="100%" roomId="sample-room">
 </vue-webrtc>
 ```
 
 ## Testing & Dev
 
 ```
-npm run dev
-npm run demo
+npm run serve
 ```
 
 ### Props
@@ -95,10 +98,17 @@ npm run demo
 
 | Version           | Notes                                                                   |
 | -------------- | ----------------------------------------------------------------------- |
+| 3.0.0           | Migrated from Vue 2 to Vue 3 
 | 2.0.0           | Replaced signaling server and webrtc library with SimplePeer 
 | 1.2.2           | Added stunServer and turnServer properties                                       |
 | 1.2.1           | Added Vue CLI sample, npm audit fixes                                       |
 | 1.2.0           | Added the Screen Share button                                       |
+
+## Upgrading from V2 to V3
+V3 of this component is a migration from Vue 2 to Vue 3.  There is no new functionality yet.  The older V2 will only be patched as needed and maintained as Vue 2.
+
+## Upgrading from V1 to V2
+V2 of this component is mostly compatible with V1 but it completely replaces the internals with a new signaling server and a new SimplePeer client.  Due to this, you will need to set the [socketUrl] to a new instance of the included .\vue-webrtc-lobby socket server.  There is a default instance that you are welcome to use but you should run your own.  If you are using STUN and TURN settings, you will now need to set those in [peerOptions] .
 
 ## Quick Start with Vue CLI
 ```
@@ -107,14 +117,14 @@ cd sample
 yarn install
 npm install vue-webrtc --save
 ```
-Now open the App.vue file and add the code in the Usage section above.
+Now open the App.vue file and replace the HelloVue component with the code in the Usage section above.
 ```
 npm run serve
 ```
-See the /sample folder
+See the /sample folder for a working project
 
 ## Roadmap
-V2 was a major internal ugrade, some other features that we would like to see added are:
+Some features that we would like to see added are:
 - Chat component
 - Audio selection
 - WebRTC data events
@@ -125,7 +135,6 @@ Let us know what you'd like to see next and vote for a feature.
 
 MIT
 
-
 ## Credits
 
 Author: [@AndyWeston on GitHub at vue-webrtc](https://github.com/westonsoftware)
@@ -135,10 +144,3 @@ This project is based off of:
 [SimplePeer](https://github.com/feross/simple-peer)
 
 [SimpleSignal](https://github.com/t-mullen/simple-signal)
-
-
-The Vue.js work was based on this camera component:  
-[@vinceg vue-web-cam](https://github.com/vinceg/vue-web-cam)
-
-
-

@@ -1,37 +1,26 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png">
-    <vue-webrtc ref="webrtc" width="100%" roomId="sample-room"/>
-    Room: sample-room
-  </div>
+    <demo>
+    </demo>
 </template>
 
 <script>
-import Vue from 'vue'
-import WebRTC from 'vue-webrtc'
+    import Demo from './components/Demo.vue'
 
-// ISSUE 5: https://github.com/westonsoftware/vue-webrtc/issues/5
-import * as io from 'socket.io-client'
-window.io = io
-//
-
-Vue.use(WebRTC)
-
-export default {
-  name: 'App',
-  mounted: function () {
-    this.$refs.webrtc.join()
-  }
-}
+    export default {
+        name: 'App',
+        components: {
+            'demo': Demo
+        }
+    }
 </script>
 
 <style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
+    #app {
+        font-family: Avenir, Helvetica, Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-align: center;
+        color: #2c3e50;
+        margin-top: 60px;
+    }
 </style>
