@@ -67,6 +67,12 @@
                     return {};
                 }
             },
+            ioOptions: {
+                type: Object,  // NOTE: use these options: https://socket.io/docs/v4/client-options/
+                default() {
+                    return { rejectUnauthorized: false, transports: ['polling', 'websocket'] };
+                }
+            },
             deviceId: {
                 type: String,
                 default: null
@@ -80,7 +86,7 @@
             async join() {
                 var that = this;
                 this.log('join');
-                this.socket = io(this.socketURL, { rejectUnauthorized: false, transports: ['websocket'] });
+                this.socket = io(this.socketURL, this.ioOptions);
                 this.signalClient = new SimpleSignalClient(this.socket);
                 let constraints = {
                     video: that.enableVideo,

@@ -12,6 +12,7 @@
                     <vue-webrtc ref="webrtc"
                                 width="100%"
                                 :roomId="roomId"
+                                :enableLogs="true"
                                 v-on:joined-room="logEvent"
                                 v-on:left-room="logEvent"
                                 v-on:opened-room="logEvent"

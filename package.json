@@ -1,6 +1,6 @@
 {
   "name": "vue-webrtc",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "WebRTC video component for Vue 3",
   "author": {
     "name": "Andy Weston",

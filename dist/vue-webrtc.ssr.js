@@ -8106,6 +8106,16 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
         return {};
       }
     },
+    ioOptions: {
+      type: Object,
+      // NOTE: use these options: https://socket.io/docs/v4/client-options/
+      default: function _default() {
+        return {
+          rejectUnauthorized: false,
+          transports: ['polling', 'websocket']
+        };
+      }
+    },
     deviceId: {
       type: String,
       default: null
@@ -8127,10 +8137,7 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
 
                 _this.log('join');
 
-                _this.socket = lookup(_this.socketURL, {
-                  rejectUnauthorized: false,
-                  transports: ['websocket']
-                });
+                _this.socket = lookup(_this.socketURL, _this.ioOptions);
                 _this.signalClient = new SimpleSignalClient(_this.socket);
                 constraints = {
                   video: that.enableVideo,
@@ -8451,9 +8458,9 @@ function render$1(_ctx, _cache, $props, $setup, $data, $options) {
   } else {
     style.appendChild(document.createTextNode(css));
   }
-}var css_248z$1 = "\n.video-list[data-v-826b541a] {\r\n        background: whitesmoke;\r\n        height: auto;\r\n        display: flex;\r\n        flex-direction: row;\r\n        justify-content: center;\r\n        flex-wrap: wrap;\n}\n.video-list div[data-v-826b541a] {\r\n            padding: 0px;\n}\n.video-item[data-v-826b541a] {\r\n        background: #c5c4c4;\r\n        display: inline-block;\n}\r\n";
+}var css_248z$1 = "\n.video-list[data-v-41044b41] {\r\n        background: whitesmoke;\r\n        height: auto;\r\n        display: flex;\r\n        flex-direction: row;\r\n        justify-content: center;\r\n        flex-wrap: wrap;\n}\n.video-list div[data-v-41044b41] {\r\n            padding: 0px;\n}\n.video-item[data-v-41044b41] {\r\n        background: #c5c4c4;\r\n        display: inline-block;\n}\r\n";
 styleInject(css_248z$1);script$1.render = render$1;
-script$1.__scopeId = "data-v-826b541a";var script = /*#__PURE__*/vue.defineComponent({
+script$1.__scopeId = "data-v-41044b41";var script = /*#__PURE__*/vue.defineComponent({
   name: 'VueWebrtcSample',
   // vue component name
   data: function data() {
@@ -8520,9 +8527,9 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return _ctx.reset && _ctx.reset.apply(_ctx, arguments);
     })
   }, " Reset ")]);
-}var css_248z = "\n.vue-webrtc-sample[data-v-45861803] {\n    display: block;\n    width: 400px;\n    margin: 25px auto;\n    border: 1px solid #ccc;\n    background: #eaeaea;\n    text-align: center;\n    padding: 25px;\n}\n.vue-webrtc-sample p[data-v-45861803] {\n    margin: 0 0 1em;\n}\n";
+}var css_248z = "\n.vue-webrtc-sample[data-v-3020e3b4] {\r\n    display: block;\r\n    width: 400px;\r\n    margin: 25px auto;\r\n    border: 1px solid #ccc;\r\n    background: #eaeaea;\r\n    text-align: center;\r\n    padding: 25px;\n}\n.vue-webrtc-sample p[data-v-3020e3b4] {\r\n    margin: 0 0 1em;\n}\r\n";
 styleInject(css_248z);script.render = render;
-script.__scopeId = "data-v-45861803";/* eslint-disable import/prefer-default-export */
+script.__scopeId = "data-v-3020e3b4";/* eslint-disable import/prefer-default-export */
 window.io = io;var components$1=/*#__PURE__*/Object.freeze({__proto__:null,VueWebRTC:script$1,VueWebrtcSample:script});var install = function installVueWebrtc(app) {
   Object.entries(components$1).forEach(function (_ref) {
     var _ref2 = _slicedToArray(_ref, 2),

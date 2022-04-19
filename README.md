@@ -68,6 +68,7 @@ npm run serve
 | enableLogs       | boolean  | false | enables webrtc console logs    |
 | deviceId       | string  | null | set video device id to a camera from navigator.mediaDevices.enumerateDevices()    |
 | peerOptions       | string  | { } | set SimplePeer options such as STUN and TURN from here [https://github.com/feross/simple-peer](https://github.com/feross/simple-peer)    |
+| ioOptions        | string  | { rejectUnauthorized: false, transports: ['polling', 'websocket'] } | set Socket IO from here [https://socket.io/docs/v4/client-options/](https://socket.io/docs/v4/client-options/)    |
 
 ### Events
 
@@ -98,6 +99,7 @@ npm run serve
 
 | Version           | Notes                                                                   |
 | -------------- | ----------------------------------------------------------------------- |
+| 3.0.1           | Added ioOptions for Socket IO 
 | 3.0.0           | Migrated from Vue 2 to Vue 3 
 | 2.0.0           | Replaced signaling server and webrtc library with SimplePeer 
 | 1.2.2           | Added stunServer and turnServer properties                                       |

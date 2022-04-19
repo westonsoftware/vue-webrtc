@@ -32,6 +32,7 @@ app.get('/', function (req, res) {
 });
 
 signalServer.on('discover', (request) => {
+   log('discover');
    let memberId = request.socket.id;
    let roomId = request.discoveryData;
    let members = rooms.get(roomId);
