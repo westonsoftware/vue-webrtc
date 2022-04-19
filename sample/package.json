@@ -9,8 +9,9 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "setimmediate": "^1.0.5",
     "vue": "^3.0.0",
-    "vue-webrtc": "^3.0.0"
+    "vue-webrtc": "^3.0.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
