@@ -1,7 +1,7 @@
 
 # vue-webrtc
 
-WebRTC component designed for Vue 3 ... See the [DEMO](https://westonsoftware.github.io/vue-webrtc/)
+WebRTC component designed for Vue 3 ... See the [DEMO](https://tinyurl.com/vue-webrtc)
 
 <p align="center">
     <img src="docs/assets/screenshot.png">
