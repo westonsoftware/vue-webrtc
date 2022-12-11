@@ -26,132 +26,524 @@ function _mergeNamespaces(n, m) {
     return Object.freeze(n);
 }
 
+const PACKET_TYPES = Object.create(null); // no Map = no polyfill
+PACKET_TYPES["open"] = "0";
+PACKET_TYPES["close"] = "1";
+PACKET_TYPES["ping"] = "2";
+PACKET_TYPES["pong"] = "3";
+PACKET_TYPES["message"] = "4";
+PACKET_TYPES["upgrade"] = "5";
+PACKET_TYPES["noop"] = "6";
+const PACKET_TYPES_REVERSE = Object.create(null);
+Object.keys(PACKET_TYPES).forEach(key => {
+    PACKET_TYPES_REVERSE[PACKET_TYPES[key]] = key;
+});
+const ERROR_PACKET = { type: "error", data: "parser error" };
+
+const encodePacket = ({ type, data }, supportsBinary, callback) => {
+    if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+        const buffer = toBuffer$2(data);
+        return callback(encodeBuffer(buffer, supportsBinary));
+    }
+    // plain string
+    return callback(PACKET_TYPES[type] + (data || ""));
+};
+const toBuffer$2 = data => {
+    if (Buffer.isBuffer(data)) {
+        return data;
+    }
+    else if (data instanceof ArrayBuffer) {
+        return Buffer.from(data);
+    }
+    else {
+        return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+    }
+};
+// only 'message' packets can contain binary, so the type prefix is not needed
+const encodeBuffer = (data, supportsBinary) => {
+    return supportsBinary ? data : "b" + data.toString("base64");
+};
+
+const decodePacket = (encodedPacket, binaryType) => {
+    if (typeof encodedPacket !== "string") {
+        return {
+            type: "message",
+            data: mapBinary(encodedPacket, binaryType)
+        };
+    }
+    const type = encodedPacket.charAt(0);
+    if (type === "b") {
+        const buffer = Buffer.from(encodedPacket.substring(1), "base64");
+        return {
+            type: "message",
+            data: mapBinary(buffer, binaryType)
+        };
+    }
+    if (!PACKET_TYPES_REVERSE[type]) {
+        return ERROR_PACKET;
+    }
+    return encodedPacket.length > 1
+        ? {
+            type: PACKET_TYPES_REVERSE[type],
+            data: encodedPacket.substring(1)
+        }
+        : {
+            type: PACKET_TYPES_REVERSE[type]
+        };
+};
+const mapBinary = (data, binaryType) => {
+    const isBuffer = Buffer.isBuffer(data);
+    switch (binaryType) {
+        case "arraybuffer":
+            return isBuffer ? toArrayBuffer$1(data) : data;
+        case "nodebuffer":
+        default:
+            return data; // assuming the data is already a Buffer
+    }
+};
+const toArrayBuffer$1 = (buffer) => {
+    const arrayBuffer = new ArrayBuffer(buffer.length);
+    const view = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < buffer.length; i++) {
+        view[i] = buffer[i];
+    }
+    return arrayBuffer;
+};
+
+const SEPARATOR = String.fromCharCode(30); // see https://en.wikipedia.org/wiki/Delimiter#ASCII_delimited_text
+const encodePayload = (packets, callback) => {
+    // some packets may be added to the array while encoding, so the initial length must be saved
+    const length = packets.length;
+    const encodedPackets = new Array(length);
+    let count = 0;
+    packets.forEach((packet, i) => {
+        // force base64 encoding for binary packets
+        encodePacket(packet, false, encodedPacket => {
+            encodedPackets[i] = encodedPacket;
+            if (++count === length) {
+                callback(encodedPackets.join(SEPARATOR));
+            }
+        });
+    });
+};
+const decodePayload = (encodedPayload, binaryType) => {
+    const encodedPackets = encodedPayload.split(SEPARATOR);
+    const packets = [];
+    for (let i = 0; i < encodedPackets.length; i++) {
+        const decodedPacket = decodePacket(encodedPackets[i], binaryType);
+        packets.push(decodedPacket);
+        if (decodedPacket.type === "error") {
+            break;
+        }
+    }
+    return packets;
+};
+const protocol$1 = 4;
+
 /**
- * Parses an URI
+ * Initialize a new `Emitter`.
  *
- * @author Steven Levithan <stevenlevithan.com> (MIT license)
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) return mixin(obj);
+}
+
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
  * @api private
  */
 
-var re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
-
-var parts = [
-    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
-];
-
-var parseuri = function parseuri(str) {
-    var src = str,
-        b = str.indexOf('['),
-        e = str.indexOf(']');
-
-    if (b != -1 && e != -1) {
-        str = str.substring(0, b) + str.substring(b, e).replace(/:/g, ';') + str.substring(e, str.length);
-    }
-
-    var m = re.exec(str || ''),
-        uri = {},
-        i = 14;
-
-    while (i--) {
-        uri[parts[i]] = m[i] || '';
-    }
-
-    if (b != -1 && e != -1) {
-        uri.source = src;
-        uri.host = uri.host.substring(1, uri.host.length - 1).replace(/;/g, ':');
-        uri.authority = uri.authority.replace('[', '').replace(']', '').replace(/;/g, ':');
-        uri.ipv6uri = true;
-    }
-
-    uri.pathNames = pathNames(uri, uri['path']);
-    uri.queryKey = queryKey(uri, uri['query']);
-
-    return uri;
-};
-
-function pathNames(obj, path) {
-    var regx = /\/{2,9}/g,
-        names = path.replace(regx, "/").split("/");
-
-    if (path.substr(0, 1) == '/' || path.length === 0) {
-        names.splice(0, 1);
-    }
-    if (path.substr(path.length - 1, 1) == '/') {
-        names.splice(names.length - 1, 1);
-    }
-
-    return names;
-}
-
-function queryKey(uri, query) {
-    var data = {};
-
-    query.replace(/(?:^|&)([^&=]*)=?([^&]*)/g, function ($0, $1, $2) {
-        if ($1) {
-            data[$1] = $2;
-        }
-    });
-
-    return data;
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
+  }
+  return obj;
 }
 
 /**
- * URL parser.
+ * Listen on the given `event` with `fn`.
  *
- * @param uri - url
- * @param path - the request path of the connection
- * @param loc - An object meant to mimic window.location.
- *        Defaults to window.location.
- * @public
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
  */
-function url(uri, path = "", loc) {
-    let obj = uri;
-    // default to window.location
-    loc = loc || (typeof location !== "undefined" && location);
-    if (null == uri)
-        uri = loc.protocol + "//" + loc.host;
-    // relative path support
-    if (typeof uri === "string") {
-        if ("/" === uri.charAt(0)) {
-            if ("/" === uri.charAt(1)) {
-                uri = loc.protocol + uri;
-            }
-            else {
-                uri = loc.host + uri;
-            }
-        }
-        if (!/^(https?|wss?):\/\//.test(uri)) {
-            if ("undefined" !== typeof loc) {
-                uri = loc.protocol + "//" + uri;
-            }
-            else {
-                uri = "https://" + uri;
-            }
-        }
-        // parse
-        obj = parseuri(uri);
+
+Emitter.prototype.on =
+Emitter.prototype.addEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
+    .push(fn);
+  return this;
+};
+
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.once = function(event, fn){
+  function on() {
+    this.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  on.fn = fn;
+  this.on(event, on);
+  return this;
+};
+
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners =
+Emitter.prototype.removeEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
+    return this;
+  }
+
+  // specific event
+  var callbacks = this._callbacks['$' + event];
+  if (!callbacks) return this;
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks['$' + event];
+    return this;
+  }
+
+  // remove specific handler
+  var cb;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    if (cb === fn || cb.fn === fn) {
+      callbacks.splice(i, 1);
+      break;
     }
-    // make sure we treat `localhost:80` and `localhost` equally
-    if (!obj.port) {
-        if (/^(http|ws)$/.test(obj.protocol)) {
-            obj.port = "80";
+  }
+
+  // Remove event specific arrays for event types that no
+  // one is subscribed for to avoid memory leak.
+  if (callbacks.length === 0) {
+    delete this._callbacks['$' + event];
+  }
+
+  return this;
+};
+
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+
+  var args = new Array(arguments.length - 1)
+    , callbacks = this._callbacks['$' + event];
+
+  for (var i = 1; i < arguments.length; i++) {
+    args[i - 1] = arguments[i];
+  }
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
+  }
+
+  return this;
+};
+
+// alias used for reserved events (protected method)
+Emitter.prototype.emitReserved = Emitter.prototype.emit;
+
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks['$' + event] || [];
+};
+
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
+
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};
+
+const globalThisShim = global;
+
+function pick(obj, ...attr) {
+    return attr.reduce((acc, k) => {
+        if (obj.hasOwnProperty(k)) {
+            acc[k] = obj[k];
         }
-        else if (/^(http|ws)s$/.test(obj.protocol)) {
-            obj.port = "443";
+        return acc;
+    }, {});
+}
+// Keep a reference to the real timeout functions so they can be used when overridden
+const NATIVE_SET_TIMEOUT = setTimeout;
+const NATIVE_CLEAR_TIMEOUT = clearTimeout;
+function installTimerFunctions(obj, opts) {
+    if (opts.useNativeTimers) {
+        obj.setTimeoutFn = NATIVE_SET_TIMEOUT.bind(globalThisShim);
+        obj.clearTimeoutFn = NATIVE_CLEAR_TIMEOUT.bind(globalThisShim);
+    }
+    else {
+        obj.setTimeoutFn = setTimeout.bind(globalThisShim);
+        obj.clearTimeoutFn = clearTimeout.bind(globalThisShim);
+    }
+}
+// base64 encoded buffers are about 33% bigger (https://en.wikipedia.org/wiki/Base64)
+const BASE64_OVERHEAD = 1.33;
+// we could also have used `new Blob([obj]).size`, but it isn't supported in IE9
+function byteLength(obj) {
+    if (typeof obj === "string") {
+        return utf8Length(obj);
+    }
+    // arraybuffer or blob
+    return Math.ceil((obj.byteLength || obj.size) * BASE64_OVERHEAD);
+}
+function utf8Length(str) {
+    let c = 0, length = 0;
+    for (let i = 0, l = str.length; i < l; i++) {
+        c = str.charCodeAt(i);
+        if (c < 0x80) {
+            length += 1;
+        }
+        else if (c < 0x800) {
+            length += 2;
+        }
+        else if (c < 0xd800 || c >= 0xe000) {
+            length += 3;
+        }
+        else {
+            i++;
+            length += 4;
         }
     }
-    obj.path = obj.path || "/";
-    const ipv6 = obj.host.indexOf(":") !== -1;
-    const host = ipv6 ? "[" + obj.host + "]" : obj.host;
-    // define unique id
-    obj.id = obj.protocol + "://" + host + ":" + obj.port + path;
-    // define href
-    obj.href =
-        obj.protocol +
-            "://" +
-            host +
-            (loc && loc.port === obj.port ? "" : ":" + obj.port);
-    return obj;
+    return length;
+}
+
+class TransportError extends Error {
+    constructor(reason, description, context) {
+        super(reason);
+        this.description = description;
+        this.context = context;
+        this.type = "TransportError";
+    }
+}
+class Transport extends Emitter {
+    /**
+     * Transport abstract constructor.
+     *
+     * @param {Object} options.
+     * @api private
+     */
+    constructor(opts) {
+        super();
+        this.writable = false;
+        installTimerFunctions(this, opts);
+        this.opts = opts;
+        this.query = opts.query;
+        this.readyState = "";
+        this.socket = opts.socket;
+    }
+    /**
+     * Emits an error.
+     *
+     * @param {String} reason
+     * @param description
+     * @param context - the error context
+     * @return {Transport} for chaining
+     * @api protected
+     */
+    onError(reason, description, context) {
+        super.emitReserved("error", new TransportError(reason, description, context));
+        return this;
+    }
+    /**
+     * Opens the transport.
+     *
+     * @api public
+     */
+    open() {
+        if ("closed" === this.readyState || "" === this.readyState) {
+            this.readyState = "opening";
+            this.doOpen();
+        }
+        return this;
+    }
+    /**
+     * Closes the transport.
+     *
+     * @api public
+     */
+    close() {
+        if ("opening" === this.readyState || "open" === this.readyState) {
+            this.doClose();
+            this.onClose();
+        }
+        return this;
+    }
+    /**
+     * Sends multiple packets.
+     *
+     * @param {Array} packets
+     * @api public
+     */
+    send(packets) {
+        if ("open" === this.readyState) {
+            this.write(packets);
+        }
+    }
+    /**
+     * Called upon open
+     *
+     * @api protected
+     */
+    onOpen() {
+        this.readyState = "open";
+        this.writable = true;
+        super.emitReserved("open");
+    }
+    /**
+     * Called with data.
+     *
+     * @param {String} data
+     * @api protected
+     */
+    onData(data) {
+        const packet = decodePacket(data, this.socket.binaryType);
+        this.onPacket(packet);
+    }
+    /**
+     * Called with a decoded packet.
+     *
+     * @api protected
+     */
+    onPacket(packet) {
+        super.emitReserved("packet", packet);
+    }
+    /**
+     * Called upon close.
+     *
+     * @api protected
+     */
+    onClose(details) {
+        this.readyState = "closed";
+        super.emitReserved("close", details);
+    }
+}
+
+// imported from https://github.com/unshiftio/yeast
+const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split(''), length = 64, map = {};
+let seed = 0, i = 0, prev;
+/**
+ * Return a string representing the specified number.
+ *
+ * @param {Number} num The number to convert.
+ * @returns {String} The string representation of the number.
+ * @api public
+ */
+function encode$1(num) {
+    let encoded = '';
+    do {
+        encoded = alphabet[num % length] + encoded;
+        num = Math.floor(num / length);
+    } while (num > 0);
+    return encoded;
+}
+/**
+ * Yeast: A tiny growing id generator.
+ *
+ * @returns {String} A unique id.
+ * @api public
+ */
+function yeast() {
+    const now = encode$1(+new Date());
+    if (now !== prev)
+        return seed = 0, prev = now;
+    return now + '.' + encode$1(seed++);
+}
+//
+// Map each character to its index.
+//
+for (; i < length; i++)
+    map[alphabet[i]] = i;
+
+// imported from https://github.com/galkn/querystring
+/**
+ * Compiles a querystring
+ * Returns string representation of the object
+ *
+ * @param {Object}
+ * @api private
+ */
+function encode(obj) {
+    let str = '';
+    for (let i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            if (str.length)
+                str += '&';
+            str += encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]);
+        }
+    }
+    return str;
+}
+/**
+ * Parses a simple querystring into an object
+ *
+ * @param {String} qs
+ * @api private
+ */
+function decode(qs) {
+    let qry = {};
+    let pairs = qs.split('&');
+    for (let i = 0, l = pairs.length; i < l; i++) {
+        let pair = pairs[i].split('=');
+        qry[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    }
+    return qry;
 }
 
 /**
@@ -175,10 +567,10 @@ var spawn = child_process.spawn;
  * Module exports.
  */
 
-var XMLHttpRequest_1 = XMLHttpRequest$1;
+var XMLHttpRequest_1 = XMLHttpRequest;
 
 // backwards-compat
-XMLHttpRequest$1.XMLHttpRequest = XMLHttpRequest$1;
+XMLHttpRequest.XMLHttpRequest = XMLHttpRequest;
 
 /**
  * `XMLHttpRequest` constructor.
@@ -190,7 +582,7 @@ XMLHttpRequest$1.XMLHttpRequest = XMLHttpRequest$1;
  * @param {Object} opts optional "options" object
  */
 
-function XMLHttpRequest$1(opts) {
+function XMLHttpRequest(opts) {
 
   opts = opts || {};
 
@@ -826,548 +1218,49 @@ function XMLHttpRequest$1(opts) {
   };
 }
 
-var XMLHttpRequestModule = /*#__PURE__*/Object.freeze(/*#__PURE__*/_mergeNamespaces({
+var XMLHttpRequestModule = /*#__PURE__*/_mergeNamespaces({
     __proto__: null,
     'default': XMLHttpRequest_1,
     __moduleExports: XMLHttpRequest_1
-}, [XMLHttpRequest_1]));
+}, [XMLHttpRequest_1]);
 
-const XMLHttpRequest = XMLHttpRequest_1 || XMLHttpRequestModule;
+const XHR = XMLHttpRequest_1 || XMLHttpRequestModule;
 
-var globalThis = global;
-
-function pick(obj, ...attr) {
-    return attr.reduce((acc, k) => {
-        if (obj.hasOwnProperty(k)) {
-            acc[k] = obj[k];
-        }
-        return acc;
-    }, {});
-}
-// Keep a reference to the real timeout functions so they can be used when overridden
-const NATIVE_SET_TIMEOUT = setTimeout;
-const NATIVE_CLEAR_TIMEOUT = clearTimeout;
-function installTimerFunctions(obj, opts) {
-    if (opts.useNativeTimers) {
-        obj.setTimeoutFn = NATIVE_SET_TIMEOUT.bind(globalThis);
-        obj.clearTimeoutFn = NATIVE_CLEAR_TIMEOUT.bind(globalThis);
-    }
-    else {
-        obj.setTimeoutFn = setTimeout.bind(globalThis);
-        obj.clearTimeoutFn = clearTimeout.bind(globalThis);
-    }
-}
-
-/**
- * Expose `Emitter`.
- */
-
-var Emitter_1 = Emitter;
-
-/**
- * Initialize a new `Emitter`.
- *
- * @api public
- */
-
-function Emitter(obj) {
-  if (obj) return mixin(obj);
-}
-
-/**
- * Mixin the emitter properties.
- *
- * @param {Object} obj
- * @return {Object}
- * @api private
- */
-
-function mixin(obj) {
-  for (var key in Emitter.prototype) {
-    obj[key] = Emitter.prototype[key];
-  }
-  return obj;
-}
-
-/**
- * Listen on the given `event` with `fn`.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.on =
-Emitter.prototype.addEventListener = function(event, fn){
-  this._callbacks = this._callbacks || {};
-  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-    .push(fn);
-  return this;
-};
-
-/**
- * Adds an `event` listener that will be invoked a single
- * time then automatically removed.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.once = function(event, fn){
-  function on() {
-    this.off(event, on);
-    fn.apply(this, arguments);
-  }
-
-  on.fn = fn;
-  this.on(event, on);
-  return this;
-};
-
-/**
- * Remove the given callback for `event` or all
- * registered callbacks.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.off =
-Emitter.prototype.removeListener =
-Emitter.prototype.removeAllListeners =
-Emitter.prototype.removeEventListener = function(event, fn){
-  this._callbacks = this._callbacks || {};
-
-  // all
-  if (0 == arguments.length) {
-    this._callbacks = {};
-    return this;
-  }
-
-  // specific event
-  var callbacks = this._callbacks['$' + event];
-  if (!callbacks) return this;
-
-  // remove all handlers
-  if (1 == arguments.length) {
-    delete this._callbacks['$' + event];
-    return this;
-  }
-
-  // remove specific handler
-  var cb;
-  for (var i = 0; i < callbacks.length; i++) {
-    cb = callbacks[i];
-    if (cb === fn || cb.fn === fn) {
-      callbacks.splice(i, 1);
-      break;
-    }
-  }
-
-  // Remove event specific arrays for event types that no
-  // one is subscribed for to avoid memory leak.
-  if (callbacks.length === 0) {
-    delete this._callbacks['$' + event];
-  }
-
-  return this;
-};
-
-/**
- * Emit `event` with the given args.
- *
- * @param {String} event
- * @param {Mixed} ...
- * @return {Emitter}
- */
-
-Emitter.prototype.emit = function(event){
-  this._callbacks = this._callbacks || {};
-
-  var args = new Array(arguments.length - 1)
-    , callbacks = this._callbacks['$' + event];
-
-  for (var i = 1; i < arguments.length; i++) {
-    args[i - 1] = arguments[i];
-  }
-
-  if (callbacks) {
-    callbacks = callbacks.slice(0);
-    for (var i = 0, len = callbacks.length; i < len; ++i) {
-      callbacks[i].apply(this, args);
-    }
-  }
-
-  return this;
-};
-
-// alias used for reserved events (protected method)
-Emitter.prototype.emitReserved = Emitter.prototype.emit;
-
-/**
- * Return array of callbacks for `event`.
- *
- * @param {String} event
- * @return {Array}
- * @api public
- */
-
-Emitter.prototype.listeners = function(event){
-  this._callbacks = this._callbacks || {};
-  return this._callbacks['$' + event] || [];
-};
-
-/**
- * Check if this emitter has `event` handlers.
- *
- * @param {String} event
- * @return {Boolean}
- * @api public
- */
-
-Emitter.prototype.hasListeners = function(event){
-  return !! this.listeners(event).length;
-};
-
-const PACKET_TYPES = Object.create(null); // no Map = no polyfill
-PACKET_TYPES["open"] = "0";
-PACKET_TYPES["close"] = "1";
-PACKET_TYPES["ping"] = "2";
-PACKET_TYPES["pong"] = "3";
-PACKET_TYPES["message"] = "4";
-PACKET_TYPES["upgrade"] = "5";
-PACKET_TYPES["noop"] = "6";
-const PACKET_TYPES_REVERSE = Object.create(null);
-Object.keys(PACKET_TYPES).forEach(key => {
-    PACKET_TYPES_REVERSE[PACKET_TYPES[key]] = key;
-});
-const ERROR_PACKET = { type: "error", data: "parser error" };
-
-const encodePacket = ({ type, data }, supportsBinary, callback) => {
-    if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-        const buffer = toBuffer$2(data);
-        return callback(encodeBuffer(buffer, supportsBinary));
-    }
-    // plain string
-    return callback(PACKET_TYPES[type] + (data || ""));
-};
-const toBuffer$2 = data => {
-    if (Buffer.isBuffer(data)) {
-        return data;
-    }
-    else if (data instanceof ArrayBuffer) {
-        return Buffer.from(data);
-    }
-    else {
-        return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
-    }
-};
-// only 'message' packets can contain binary, so the type prefix is not needed
-const encodeBuffer = (data, supportsBinary) => {
-    return supportsBinary ? data : "b" + data.toString("base64");
-};
-
-const decodePacket = (encodedPacket, binaryType) => {
-    if (typeof encodedPacket !== "string") {
-        return {
-            type: "message",
-            data: mapBinary(encodedPacket, binaryType)
-        };
-    }
-    const type = encodedPacket.charAt(0);
-    if (type === "b") {
-        const buffer = Buffer.from(encodedPacket.substring(1), "base64");
-        return {
-            type: "message",
-            data: mapBinary(buffer, binaryType)
-        };
-    }
-    if (!PACKET_TYPES_REVERSE[type]) {
-        return ERROR_PACKET;
-    }
-    return encodedPacket.length > 1
-        ? {
-            type: PACKET_TYPES_REVERSE[type],
-            data: encodedPacket.substring(1)
-        }
-        : {
-            type: PACKET_TYPES_REVERSE[type]
-        };
-};
-const mapBinary = (data, binaryType) => {
-    const isBuffer = Buffer.isBuffer(data);
-    switch (binaryType) {
-        case "arraybuffer":
-            return isBuffer ? toArrayBuffer$1(data) : data;
-        case "nodebuffer":
-        default:
-            return data; // assuming the data is already a Buffer
-    }
-};
-const toArrayBuffer$1 = buffer => {
-    const arrayBuffer = new ArrayBuffer(buffer.length);
-    const view = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < buffer.length; i++) {
-        view[i] = buffer[i];
-    }
-    return arrayBuffer;
-};
-
-const SEPARATOR = String.fromCharCode(30); // see https://en.wikipedia.org/wiki/Delimiter#ASCII_delimited_text
-const encodePayload = (packets, callback) => {
-    // some packets may be added to the array while encoding, so the initial length must be saved
-    const length = packets.length;
-    const encodedPackets = new Array(length);
-    let count = 0;
-    packets.forEach((packet, i) => {
-        // force base64 encoding for binary packets
-        encodePacket(packet, false, encodedPacket => {
-            encodedPackets[i] = encodedPacket;
-            if (++count === length) {
-                callback(encodedPackets.join(SEPARATOR));
-            }
-        });
+function empty() { }
+const hasXHR2 = (function () {
+    const xhr = new XHR({
+        xdomain: false
     });
-};
-const decodePayload = (encodedPayload, binaryType) => {
-    const encodedPackets = encodedPayload.split(SEPARATOR);
-    const packets = [];
-    for (let i = 0; i < encodedPackets.length; i++) {
-        const decodedPacket = decodePacket(encodedPackets[i], binaryType);
-        packets.push(decodedPacket);
-        if (decodedPacket.type === "error") {
-            break;
-        }
-    }
-    return packets;
-};
-const protocol$1 = 4;
-
-class Transport extends Emitter_1 {
+    return null != xhr.responseType;
+})();
+class Polling extends Transport {
     /**
-     * Transport abstract constructor.
+     * XHR Polling constructor.
      *
-     * @param {Object} options.
-     * @api private
+     * @param {Object} opts
+     * @api public
      */
     constructor(opts) {
-        super();
-        this.writable = false;
-        installTimerFunctions(this, opts);
-        this.opts = opts;
-        this.query = opts.query;
-        this.readyState = "";
-        this.socket = opts.socket;
-    }
-    /**
-     * Emits an error.
-     *
-     * @param {String} str
-     * @return {Transport} for chaining
-     * @api protected
-     */
-    onError(msg, desc) {
-        const err = new Error(msg);
-        // @ts-ignore
-        err.type = "TransportError";
-        // @ts-ignore
-        err.description = desc;
-        super.emit("error", err);
-        return this;
-    }
-    /**
-     * Opens the transport.
-     *
-     * @api public
-     */
-    open() {
-        if ("closed" === this.readyState || "" === this.readyState) {
-            this.readyState = "opening";
-            this.doOpen();
-        }
-        return this;
-    }
-    /**
-     * Closes the transport.
-     *
-     * @api public
-     */
-    close() {
-        if ("opening" === this.readyState || "open" === this.readyState) {
-            this.doClose();
-            this.onClose();
-        }
-        return this;
-    }
-    /**
-     * Sends multiple packets.
-     *
-     * @param {Array} packets
-     * @api public
-     */
-    send(packets) {
-        if ("open" === this.readyState) {
-            this.write(packets);
-        }
-    }
-    /**
-     * Called upon open
-     *
-     * @api protected
-     */
-    onOpen() {
-        this.readyState = "open";
-        this.writable = true;
-        super.emit("open");
-    }
-    /**
-     * Called with data.
-     *
-     * @param {String} data
-     * @api protected
-     */
-    onData(data) {
-        const packet = decodePacket(data, this.socket.binaryType);
-        this.onPacket(packet);
-    }
-    /**
-     * Called with a decoded packet.
-     *
-     * @api protected
-     */
-    onPacket(packet) {
-        super.emit("packet", packet);
-    }
-    /**
-     * Called upon close.
-     *
-     * @api protected
-     */
-    onClose() {
-        this.readyState = "closed";
-        super.emit("close");
-    }
-}
-
-var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
-  , length = 64
-  , map = {}
-  , seed = 0
-  , i = 0
-  , prev;
-
-/**
- * Return a string representing the specified number.
- *
- * @param {Number} num The number to convert.
- * @returns {String} The string representation of the number.
- * @api public
- */
-function encode$1(num) {
-  var encoded = '';
-
-  do {
-    encoded = alphabet[num % length] + encoded;
-    num = Math.floor(num / length);
-  } while (num > 0);
-
-  return encoded;
-}
-
-/**
- * Return the integer value specified by the given string.
- *
- * @param {String} str The string to convert.
- * @returns {Number} The integer value represented by the string.
- * @api public
- */
-function decode$1(str) {
-  var decoded = 0;
-
-  for (i = 0; i < str.length; i++) {
-    decoded = decoded * length + map[str.charAt(i)];
-  }
-
-  return decoded;
-}
-
-/**
- * Yeast: A tiny growing id generator.
- *
- * @returns {String} A unique id.
- * @api public
- */
-function yeast() {
-  var now = encode$1(+new Date());
-
-  if (now !== prev) return seed = 0, prev = now;
-  return now +'.'+ encode$1(seed++);
-}
-
-//
-// Map each character to its index.
-//
-for (; i < length; i++) map[alphabet[i]] = i;
-
-//
-// Expose the `yeast`, `encode` and `decode` functions.
-//
-yeast.encode = encode$1;
-yeast.decode = decode$1;
-var yeast_1 = yeast;
-
-/**
- * Compiles a querystring
- * Returns string representation of the object
- *
- * @param {Object}
- * @api private
- */
-
-var encode = function (obj) {
-  var str = '';
-
-  for (var i in obj) {
-    if (obj.hasOwnProperty(i)) {
-      if (str.length) str += '&';
-      str += encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]);
-    }
-  }
-
-  return str;
-};
-
-/**
- * Parses a simple querystring into an object
- *
- * @param {String} qs
- * @api private
- */
-
-var decode = function(qs){
-  var qry = {};
-  var pairs = qs.split('&');
-  for (var i = 0, l = pairs.length; i < l; i++) {
-    var pair = pairs[i].split('=');
-    qry[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-  }
-  return qry;
-};
-
-var parseqs = {
-	encode: encode,
-	decode: decode
-};
-
-class Polling extends Transport {
-    constructor() {
-        super(...arguments);
+        super(opts);
         this.polling = false;
+        if (typeof location !== "undefined") {
+            const isSSL = "https:" === location.protocol;
+            let port = location.port;
+            // some user agents have empty `location.port`
+            if (!port) {
+                port = isSSL ? "443" : "80";
+            }
+            this.xd =
+                (typeof location !== "undefined" &&
+                    opts.hostname !== location.hostname) ||
+                    port !== opts.port;
+            this.xs = opts.secure !== isSSL;
+        }
+        /**
+         * XHR supports binary
+         */
+        const forceBase64 = opts && opts.forceBase64;
+        this.supportsBinary = hasXHR2 && !forceBase64;
     }
     /**
      * Transport name.
@@ -1423,7 +1316,7 @@ class Polling extends Transport {
     poll() {
         this.polling = true;
         this.doPoll();
-        this.emit("poll");
+        this.emitReserved("poll");
     }
     /**
      * Overloads onData to detect payloads.
@@ -1438,7 +1331,7 @@ class Polling extends Transport {
             }
             // if its a close packet, we close the ongoing requests
             if ("close" === packet.type) {
-                this.onClose();
+                this.onClose({ description: "transport closed by the server" });
                 return false;
             }
             // otherwise bypass onData and handle the message
@@ -1450,7 +1343,7 @@ class Polling extends Transport {
         if ("closed" !== this.readyState) {
             // if we got data we're not polling
             this.polling = false;
-            this.emit("pollComplete");
+            this.emitReserved("pollComplete");
             if ("open" === this.readyState) {
                 this.poll();
             }
@@ -1486,7 +1379,7 @@ class Polling extends Transport {
         encodePayload(packets, data => {
             this.doWrite(data, () => {
                 this.writable = true;
-                this.emit("drain");
+                this.emitReserved("drain");
             });
         });
     }
@@ -1501,7 +1394,7 @@ class Polling extends Transport {
         let port = "";
         // cache busting is forced
         if (false !== this.opts.timestampRequests) {
-            query[this.opts.timestampParam] = yeast_1();
+            query[this.opts.timestampParam] = yeast();
         }
         if (!this.supportsBinary && !query.sid) {
             query.b64 = 1;
@@ -1512,7 +1405,7 @@ class Polling extends Transport {
                 ("http" === schema && Number(this.opts.port) !== 80))) {
             port = ":" + this.opts.port;
         }
-        const encodedQuery = parseqs.encode(query);
+        const encodedQuery = encode(query);
         const ipv6 = this.opts.hostname.indexOf(":") !== -1;
         return (schema +
             "://" +
@@ -1520,47 +1413,6 @@ class Polling extends Transport {
             port +
             this.opts.path +
             (encodedQuery.length ? "?" + encodedQuery : ""));
-    }
-}
-
-/* global attachEvent */
-/**
- * Empty function
- */
-function empty() { }
-const hasXHR2 = (function () {
-    const xhr = new XMLHttpRequest({
-        xdomain: false
-    });
-    return null != xhr.responseType;
-})();
-class XHR extends Polling {
-    /**
-     * XHR Polling constructor.
-     *
-     * @param {Object} opts
-     * @api public
-     */
-    constructor(opts) {
-        super(opts);
-        if (typeof location !== "undefined") {
-            const isSSL = "https:" === location.protocol;
-            let port = location.port;
-            // some user agents have empty `location.port`
-            if (!port) {
-                port = isSSL ? "443" : "80";
-            }
-            this.xd =
-                (typeof location !== "undefined" &&
-                    opts.hostname !== location.hostname) ||
-                    port !== opts.port;
-            this.xs = opts.secure !== isSSL;
-        }
-        /**
-         * XHR supports binary
-         */
-        const forceBase64 = opts && opts.forceBase64;
-        this.supportsBinary = hasXHR2 && !forceBase64;
     }
     /**
      * Creates a request.
@@ -1585,8 +1437,8 @@ class XHR extends Polling {
             data: data
         });
         req.on("success", fn);
-        req.on("error", err => {
-            this.onError("xhr post error", err);
+        req.on("error", (xhrStatus, context) => {
+            this.onError("xhr post error", xhrStatus, context);
         });
     }
     /**
@@ -1597,13 +1449,13 @@ class XHR extends Polling {
     doPoll() {
         const req = this.request();
         req.on("data", this.onData.bind(this));
-        req.on("error", err => {
-            this.onError("xhr poll error", err);
+        req.on("error", (xhrStatus, context) => {
+            this.onError("xhr poll error", xhrStatus, context);
         });
         this.pollXhr = req;
     }
 }
-class Request extends Emitter_1 {
+class Request extends Emitter {
     /**
      * Request constructor
      *
@@ -1629,7 +1481,7 @@ class Request extends Emitter_1 {
         const opts = pick(this.opts, "agent", "pfx", "key", "passphrase", "cert", "ca", "ciphers", "rejectUnauthorized", "autoUnref");
         opts.xdomain = !!this.opts.xd;
         opts.xscheme = !!this.opts.xs;
-        const xhr = (this.xhr = new XMLHttpRequest(opts));
+        const xhr = (this.xhr = new XHR(opts));
         try {
             xhr.open(this.method, this.uri, this.async);
             try {
@@ -1691,30 +1543,12 @@ class Request extends Emitter_1 {
         }
     }
     /**
-     * Called upon successful response.
-     *
-     * @api private
-     */
-    onSuccess() {
-        this.emit("success");
-        this.cleanup();
-    }
-    /**
-     * Called if we have data.
-     *
-     * @api private
-     */
-    onData(data) {
-        this.emit("data", data);
-        this.onSuccess();
-    }
-    /**
      * Called upon error.
      *
      * @api private
      */
     onError(err) {
-        this.emit("error", err);
+        this.emitReserved("error", err, this.xhr);
         this.cleanup(true);
     }
     /**
@@ -1746,7 +1580,9 @@ class Request extends Emitter_1 {
     onLoad() {
         const data = this.xhr.responseText;
         if (data !== null) {
-            this.onData(data);
+            this.emitReserved("data", data);
+            this.emitReserved("success");
+            this.cleanup();
         }
     }
     /**
@@ -1772,7 +1608,7 @@ if (typeof document !== "undefined") {
         attachEvent("onunload", unloadHandler);
     }
     else if (typeof addEventListener === "function") {
-        const terminationEvent = "onpagehide" in globalThis ? "pagehide" : "unload";
+        const terminationEvent = "onpagehide" in globalThisShim ? "pagehide" : "unload";
         addEventListener(terminationEvent, unloadHandler, false);
     }
 }
@@ -3940,7 +3776,7 @@ function push(dest, name, elem) {
  * @return {Object} The parsed object
  * @public
  */
-function parse$2(header) {
+function parse$3(header) {
   const offers = Object.create(null);
   let params = Object.create(null);
   let mustUnescape = false;
@@ -4116,7 +3952,7 @@ function format$1(extensions) {
     .join(', ');
 }
 
-var extension = { format: format$1, parse: parse$2 };
+var extension = { format: format$1, parse: parse$3 };
 
 const { randomBytes, createHash: createHash$1 } = crypto;
 const { URL } = url$1;
@@ -4137,7 +3973,7 @@ const {
 const {
   EventTarget: { addEventListener: addEventListener$1, removeEventListener: removeEventListener$1 }
 } = eventTarget;
-const { format, parse: parse$1 } = extension;
+const { format, parse: parse$2 } = extension;
 const { toBuffer } = bufferUtil;
 
 const readyStates = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
@@ -4922,7 +4758,7 @@ function initAsClient(websocket, address, protocols, options) {
       let extensions;
 
       try {
-        extensions = parse$1(secWebSocketExtensions);
+        extensions = parse$2(secWebSocketExtensions);
       } catch (err) {
         const message = 'Invalid Sec-WebSocket-Extensions header';
         abortHandshake$1(websocket, socket, message);
@@ -5446,7 +5282,7 @@ const { tokenChars } = validation;
  * @return {Set} The subprotocol names
  * @public
  */
-function parse(header) {
+function parse$1(header) {
   const protocols = new Set();
   let start = -1;
   let end = -1;
@@ -5496,7 +5332,7 @@ function parse(header) {
   return protocols;
 }
 
-var subprotocol = { parse };
+var subprotocol = { parse: parse$1 };
 
 const { createHash } = crypto;
 
@@ -6041,7 +5877,7 @@ class WS extends Transport {
                     : new WebSocket(uri, protocols, opts);
         }
         catch (err) {
-            return this.emit("error", err);
+            return this.emitReserved("error", err);
         }
         this.ws.binaryType = this.socket.binaryType || defaultBinaryType;
         this.addEventListeners();
@@ -6058,7 +5894,10 @@ class WS extends Transport {
             }
             this.onOpen();
         };
-        this.ws.onclose = this.onClose.bind(this);
+        this.ws.onclose = closeEvent => this.onClose({
+            description: "websocket connection closed",
+            context: closeEvent
+        });
         this.ws.onmessage = ev => this.onData(ev.data);
         this.ws.onerror = e => this.onError("websocket error", e);
     }
@@ -6083,7 +5922,9 @@ class WS extends Transport {
                         opts.compress = packet.options.compress;
                     }
                     if (this.opts.perMessageDeflate) {
-                        const len = "string" === typeof data ? Buffer.byteLength(data) : data.length;
+                        const len = 
+                        // @ts-ignore
+                        "string" === typeof data ? Buffer.byteLength(data) : data.length;
                         if (len < this.opts.perMessageDeflate.threshold) {
                             opts.compress = false;
                         }
@@ -6105,7 +5946,7 @@ class WS extends Transport {
                     // defer to next tick to allow Socket to clear writeBuffer
                     nextTick(() => {
                         this.writable = true;
-                        this.emit("drain");
+                        this.emitReserved("drain");
                     }, this.setTimeoutFn);
                 }
             });
@@ -6139,13 +5980,13 @@ class WS extends Transport {
         }
         // append timestamp to URI
         if (this.opts.timestampRequests) {
-            query[this.opts.timestampParam] = yeast_1();
+            query[this.opts.timestampParam] = yeast();
         }
         // communicate binary support capabilities
         if (!this.supportsBinary) {
             query.b64 = 1;
         }
-        const encodedQuery = parseqs.encode(query);
+        const encodedQuery = encode(query);
         const ipv6 = this.opts.hostname.indexOf(":") !== -1;
         return (schema +
             "://" +
@@ -6161,17 +6002,66 @@ class WS extends Transport {
      * @api public
      */
     check() {
-        return (!!WebSocket &&
-            !("__initialize" in WebSocket && this.name === WS.prototype.name));
+        return !!WebSocket;
     }
 }
 
 const transports = {
     websocket: WS,
-    polling: XHR
+    polling: Polling
 };
 
-class Socket$1 extends Emitter_1 {
+// imported from https://github.com/galkn/parseuri
+/**
+ * Parses an URI
+ *
+ * @author Steven Levithan <stevenlevithan.com> (MIT license)
+ * @api private
+ */
+const re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
+const parts = [
+    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
+];
+function parse(str) {
+    const src = str, b = str.indexOf('['), e = str.indexOf(']');
+    if (b != -1 && e != -1) {
+        str = str.substring(0, b) + str.substring(b, e).replace(/:/g, ';') + str.substring(e, str.length);
+    }
+    let m = re.exec(str || ''), uri = {}, i = 14;
+    while (i--) {
+        uri[parts[i]] = m[i] || '';
+    }
+    if (b != -1 && e != -1) {
+        uri.source = src;
+        uri.host = uri.host.substring(1, uri.host.length - 1).replace(/;/g, ':');
+        uri.authority = uri.authority.replace('[', '').replace(']', '').replace(/;/g, ':');
+        uri.ipv6uri = true;
+    }
+    uri.pathNames = pathNames(uri, uri['path']);
+    uri.queryKey = queryKey(uri, uri['query']);
+    return uri;
+}
+function pathNames(obj, path) {
+    const regx = /\/{2,9}/g, names = path.replace(regx, "/").split("/");
+    if (path.slice(0, 1) == '/' || path.length === 0) {
+        names.splice(0, 1);
+    }
+    if (path.slice(-1) == '/') {
+        names.splice(names.length - 1, 1);
+    }
+    return names;
+}
+function queryKey(uri, query) {
+    const data = {};
+    query.replace(/(?:^|&)([^&=]*)=?([^&]*)/g, function ($0, $1, $2) {
+        if ($1) {
+            data[$1] = $2;
+        }
+    });
+    return data;
+}
+
+class Socket$1 extends Emitter {
     /**
      * Socket constructor.
      *
@@ -6186,7 +6076,7 @@ class Socket$1 extends Emitter_1 {
             uri = null;
         }
         if (uri) {
-            uri = parseuri(uri);
+            uri = parse(uri);
             opts.hostname = uri.host;
             opts.secure = uri.protocol === "https" || uri.protocol === "wss";
             opts.port = uri.port;
@@ -6194,7 +6084,7 @@ class Socket$1 extends Emitter_1 {
                 opts.query = uri.query;
         }
         else if (opts.host) {
-            opts.hostname = parseuri(opts.host).host;
+            opts.hostname = parse(opts.host).host;
         }
         installTimerFunctions(this, opts);
         this.secure =
@@ -6235,7 +6125,7 @@ class Socket$1 extends Emitter_1 {
         }, opts);
         this.opts.path = this.opts.path.replace(/\/$/, "") + "/";
         if (typeof this.opts.query === "string") {
-            this.opts.query = parseqs.decode(this.opts.query);
+            this.opts.query = decode(this.opts.query);
         }
         // set on handshake
         this.id = null;
@@ -6249,17 +6139,20 @@ class Socket$1 extends Emitter_1 {
                 // Firefox closes the connection when the "beforeunload" event is emitted but not Chrome. This event listener
                 // ensures every browser behaves the same (no "disconnect" event at the Socket.IO level when the page is
                 // closed/reloaded)
-                addEventListener("beforeunload", () => {
+                this.beforeunloadEventListener = () => {
                     if (this.transport) {
                         // silently close the transport
                         this.transport.removeAllListeners();
                         this.transport.close();
                     }
-                }, false);
+                };
+                addEventListener("beforeunload", this.beforeunloadEventListener, false);
             }
             if (this.hostname !== "localhost") {
                 this.offlineEventListener = () => {
-                    this.onClose("transport close");
+                    this.onClose("transport close", {
+                        description: "network connection lost"
+                    });
                 };
                 addEventListener("offline", this.offlineEventListener, false);
             }
@@ -6274,7 +6167,7 @@ class Socket$1 extends Emitter_1 {
      * @api private
      */
     createTransport(name) {
-        const query = clone(this.opts.query);
+        const query = Object.assign({}, this.opts.query);
         // append engine.io protocol identifier
         query.EIO = protocol$1;
         // transport name
@@ -6342,9 +6235,7 @@ class Socket$1 extends Emitter_1 {
             .on("drain", this.onDrain.bind(this))
             .on("packet", this.onPacket.bind(this))
             .on("error", this.onError.bind(this))
-            .on("close", () => {
-            this.onClose("transport close");
-        });
+            .on("close", reason => this.onClose("transport close", reason));
     }
     /**
      * Probes a transport.
@@ -6506,6 +6397,7 @@ class Socket$1 extends Emitter_1 {
         this.upgrades = this.filterUpgrades(data.upgrades);
         this.pingInterval = data.pingInterval;
         this.pingTimeout = data.pingTimeout;
+        this.maxPayload = data.maxPayload;
         this.onOpen();
         // In case open handler closes socket
         if ("closed" === this.readyState)
@@ -6554,12 +6446,39 @@ class Socket$1 extends Emitter_1 {
             this.transport.writable &&
             !this.upgrading &&
             this.writeBuffer.length) {
-            this.transport.send(this.writeBuffer);
+            const packets = this.getWritablePackets();
+            this.transport.send(packets);
             // keep track of current length of writeBuffer
             // splice writeBuffer and callbackBuffer on `drain`
-            this.prevBufferLen = this.writeBuffer.length;
+            this.prevBufferLen = packets.length;
             this.emitReserved("flush");
         }
+    }
+    /**
+     * Ensure the encoded size of the writeBuffer is below the maxPayload value sent by the server (only for HTTP
+     * long-polling)
+     *
+     * @private
+     */
+    getWritablePackets() {
+        const shouldCheckPayloadSize = this.maxPayload &&
+            this.transport.name === "polling" &&
+            this.writeBuffer.length > 1;
+        if (!shouldCheckPayloadSize) {
+            return this.writeBuffer;
+        }
+        let payloadSize = 1; // first packet type
+        for (let i = 0; i < this.writeBuffer.length; i++) {
+            const data = this.writeBuffer[i].data;
+            if (data) {
+                payloadSize += byteLength(data);
+            }
+            if (i > 0 && payloadSize > this.maxPayload) {
+                return this.writeBuffer.slice(0, i);
+            }
+            payloadSize += 2; // separator + packet type
+        }
+        return this.writeBuffer;
     }
     /**
      * Sends a message.
@@ -6668,7 +6587,7 @@ class Socket$1 extends Emitter_1 {
      *
      * @api private
      */
-    onClose(reason, desc) {
+    onClose(reason, description) {
         if ("opening" === this.readyState ||
             "open" === this.readyState ||
             "closing" === this.readyState) {
@@ -6681,6 +6600,7 @@ class Socket$1 extends Emitter_1 {
             // ignore further transport communication
             this.transport.removeAllListeners();
             if (typeof removeEventListener === "function") {
+                removeEventListener("beforeunload", this.beforeunloadEventListener, false);
                 removeEventListener("offline", this.offlineEventListener, false);
             }
             // set ready state
@@ -6688,7 +6608,7 @@ class Socket$1 extends Emitter_1 {
             // clear session id
             this.id = null;
             // emit close event
-            this.emitReserved("close", reason, desc);
+            this.emitReserved("close", reason, description);
             // clean buffers after, so users can still
             // grab the buffers on `close` event
             this.writeBuffer = [];
@@ -6714,14 +6634,64 @@ class Socket$1 extends Emitter_1 {
     }
 }
 Socket$1.protocol = protocol$1;
-function clone(obj) {
-    const o = {};
-    for (let i in obj) {
-        if (obj.hasOwnProperty(i)) {
-            o[i] = obj[i];
+
+/**
+ * URL parser.
+ *
+ * @param uri - url
+ * @param path - the request path of the connection
+ * @param loc - An object meant to mimic window.location.
+ *        Defaults to window.location.
+ * @public
+ */
+function url(uri, path = "", loc) {
+    let obj = uri;
+    // default to window.location
+    loc = loc || (typeof location !== "undefined" && location);
+    if (null == uri)
+        uri = loc.protocol + "//" + loc.host;
+    // relative path support
+    if (typeof uri === "string") {
+        if ("/" === uri.charAt(0)) {
+            if ("/" === uri.charAt(1)) {
+                uri = loc.protocol + uri;
+            }
+            else {
+                uri = loc.host + uri;
+            }
+        }
+        if (!/^(https?|wss?):\/\//.test(uri)) {
+            if ("undefined" !== typeof loc) {
+                uri = loc.protocol + "//" + uri;
+            }
+            else {
+                uri = "https://" + uri;
+            }
+        }
+        // parse
+        obj = parse(uri);
+    }
+    // make sure we treat `localhost:80` and `localhost` equally
+    if (!obj.port) {
+        if (/^(http|ws)$/.test(obj.protocol)) {
+            obj.port = "80";
+        }
+        else if (/^(http|ws)s$/.test(obj.protocol)) {
+            obj.port = "443";
         }
     }
-    return o;
+    obj.path = obj.path || "/";
+    const ipv6 = obj.host.indexOf(":") !== -1;
+    const host = ipv6 ? "[" + obj.host + "]" : obj.host;
+    // define unique id
+    obj.id = obj.protocol + "://" + host + ":" + obj.port + path;
+    // define href
+    obj.href =
+        obj.protocol +
+            "://" +
+            host +
+            (loc && loc.port === obj.port ? "" : ":" + obj.port);
+    return obj;
 }
 
 const withNativeArrayBuffer = typeof ArrayBuffer === "function";
@@ -6808,7 +6778,7 @@ function _deconstructPacket(data, buffers) {
     else if (typeof data === "object" && !(data instanceof Date)) {
         const newData = {};
         for (const key in data) {
-            if (data.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
                 newData[key] = _deconstructPacket(data[key], buffers);
             }
         }
@@ -6832,8 +6802,16 @@ function reconstructPacket(packet, buffers) {
 function _reconstructPacket(data, buffers) {
     if (!data)
         return data;
-    if (data && data._placeholder) {
-        return buffers[data.num]; // appropriate buffer (should be natural order anyway)
+    if (data && data._placeholder === true) {
+        const isIndexValid = typeof data.num === "number" &&
+            data.num >= 0 &&
+            data.num < buffers.length;
+        if (isIndexValid) {
+            return buffers[data.num]; // appropriate buffer (should be natural order anyway)
+        }
+        else {
+            throw new Error("illegal attachments");
+        }
     }
     else if (Array.isArray(data)) {
         for (let i = 0; i < data.length; i++) {
@@ -6842,7 +6820,7 @@ function _reconstructPacket(data, buffers) {
     }
     else if (typeof data === "object") {
         for (const key in data) {
-            if (data.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
                 data[key] = _reconstructPacket(data[key], buffers);
             }
         }
@@ -6870,6 +6848,14 @@ var PacketType;
  * A socket.io Encoder instance
  */
 class Encoder {
+    /**
+     * Encoder constructor
+     *
+     * @param {function} replacer - custom replacer to pass down to JSON.parse
+     */
+    constructor(replacer) {
+        this.replacer = replacer;
+    }
     /**
      * Encode a packet as a single string if non-binary, or as a
      * buffer sequence, depending on packet type.
@@ -6910,7 +6896,7 @@ class Encoder {
         }
         // json data
         if (null != obj.data) {
-            str += JSON.stringify(obj.data);
+            str += JSON.stringify(obj.data, this.replacer);
         }
         return str;
     }
@@ -6932,9 +6918,15 @@ class Encoder {
  *
  * @return {Object} decoder
  */
-class Decoder extends Emitter_1 {
-    constructor() {
+class Decoder extends Emitter {
+    /**
+     * Decoder constructor
+     *
+     * @param {function} reviver - custom reviver to pass down to JSON.stringify
+     */
+    constructor(reviver) {
         super();
+        this.reviver = reviver;
     }
     /**
      * Decodes an encoded packet string into packet JSON.
@@ -6944,6 +6936,9 @@ class Decoder extends Emitter_1 {
     add(obj) {
         let packet;
         if (typeof obj === "string") {
+            if (this.reconstructor) {
+                throw new Error("got plaintext data when reconstructing a packet");
+            }
             packet = this.decodeString(obj);
             if (packet.type === PacketType.BINARY_EVENT ||
                 packet.type === PacketType.BINARY_ACK) {
@@ -7035,7 +7030,7 @@ class Decoder extends Emitter_1 {
         }
         // look up json data
         if (str.charAt(++i)) {
-            const payload = tryParse(str.substr(i));
+            const payload = this.tryParse(str.substr(i));
             if (Decoder.isPayloadValid(p.type, payload)) {
                 p.data = payload;
             }
@@ -7044,6 +7039,14 @@ class Decoder extends Emitter_1 {
             }
         }
         return p;
+    }
+    tryParse(str) {
+        try {
+            return JSON.parse(str, this.reviver);
+        }
+        catch (e) {
+            return false;
+        }
     }
     static isPayloadValid(type, payload) {
         switch (type) {
@@ -7068,14 +7071,6 @@ class Decoder extends Emitter_1 {
         if (this.reconstructor) {
             this.reconstructor.finishedReconstruction();
         }
-    }
-}
-function tryParse(str) {
-    try {
-        return JSON.parse(str);
-    }
-    catch (e) {
-        return false;
     }
 }
 /**
@@ -7147,17 +7142,58 @@ const RESERVED_EVENTS = Object.freeze({
     newListener: 1,
     removeListener: 1,
 });
-class Socket extends Emitter_1 {
+/**
+ * A Socket is the fundamental class for interacting with the server.
+ *
+ * A Socket belongs to a certain Namespace (by default /) and uses an underlying {@link Manager} to communicate.
+ *
+ * @example
+ * const socket = io();
+ *
+ * socket.on("connect", () => {
+ *   console.log("connected");
+ * });
+ *
+ * // send an event to the server
+ * socket.emit("foo", "bar");
+ *
+ * socket.on("foobar", () => {
+ *   // an event was received from the server
+ * });
+ *
+ * // upon disconnection
+ * socket.on("disconnect", (reason) => {
+ *   console.log(`disconnected due to ${reason}`);
+ * });
+ */
+class Socket extends Emitter {
     /**
      * `Socket` constructor.
-     *
-     * @public
      */
     constructor(io, nsp, opts) {
         super();
+        /**
+         * Whether the socket is currently connected to the server.
+         *
+         * @example
+         * const socket = io();
+         *
+         * socket.on("connect", () => {
+         *   console.log(socket.connected); // true
+         * });
+         *
+         * socket.on("disconnect", () => {
+         *   console.log(socket.connected); // false
+         * });
+         */
         this.connected = false;
-        this.disconnected = true;
+        /**
+         * Buffer for packets received before the CONNECT packet
+         */
         this.receiveBuffer = [];
+        /**
+         * Buffer for packets that will be sent once the socket is connected
+         */
         this.sendBuffer = [];
         this.ids = 0;
         this.acks = {};
@@ -7169,6 +7205,23 @@ class Socket extends Emitter_1 {
         }
         if (this.io._autoConnect)
             this.open();
+    }
+    /**
+     * Whether the socket is currently disconnected
+     *
+     * @example
+     * const socket = io();
+     *
+     * socket.on("connect", () => {
+     *   console.log(socket.disconnected); // false
+     * });
+     *
+     * socket.on("disconnect", () => {
+     *   console.log(socket.disconnected); // true
+     * });
+     */
+    get disconnected() {
+        return !this.connected;
     }
     /**
      * Subscribe to open, close and packet events
@@ -7187,7 +7240,21 @@ class Socket extends Emitter_1 {
         ];
     }
     /**
-     * Whether the Socket will try to reconnect when its Manager connects or reconnects
+     * Whether the Socket will try to reconnect when its Manager connects or reconnects.
+     *
+     * @example
+     * const socket = io();
+     *
+     * console.log(socket.active); // true
+     *
+     * socket.on("disconnect", (reason) => {
+     *   if (reason === "io server disconnect") {
+     *     // the disconnection was initiated by the server, you need to manually reconnect
+     *     console.log(socket.active); // false
+     *   }
+     *   // else the socket will automatically try to reconnect
+     *   console.log(socket.active); // true
+     * });
      */
     get active() {
         return !!this.subs;
@@ -7195,7 +7262,12 @@ class Socket extends Emitter_1 {
     /**
      * "Opens" the socket.
      *
-     * @public
+     * @example
+     * const socket = io({
+     *   autoConnect: false
+     * });
+     *
+     * socket.connect();
      */
     connect() {
         if (this.connected)
@@ -7208,7 +7280,7 @@ class Socket extends Emitter_1 {
         return this;
     }
     /**
-     * Alias for connect()
+     * Alias for {@link connect()}.
      */
     open() {
         return this.connect();
@@ -7216,8 +7288,17 @@ class Socket extends Emitter_1 {
     /**
      * Sends a `message` event.
      *
+     * This method mimics the WebSocket.send() method.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send
+     *
+     * @example
+     * socket.send("hello");
+     *
+     * // this is equivalent to
+     * socket.emit("message", "hello");
+     *
      * @return self
-     * @public
      */
     send(...args) {
         args.unshift("message");
@@ -7228,12 +7309,22 @@ class Socket extends Emitter_1 {
      * Override `emit`.
      * If the event is in `events`, it's emitted normally.
      *
+     * @example
+     * socket.emit("hello", "world");
+     *
+     * // all serializable datastructures are supported (no need to call JSON.stringify)
+     * socket.emit("hello", 1, "2", { 3: ["4"], 5: Uint8Array.from([6]) });
+     *
+     * // with an acknowledgement from the server
+     * socket.emit("hello", "world", (val) => {
+     *   // ...
+     * });
+     *
      * @return self
-     * @public
      */
     emit(ev, ...args) {
         if (RESERVED_EVENTS.hasOwnProperty(ev)) {
-            throw new Error('"' + ev + '" is a reserved event name');
+            throw new Error('"' + ev.toString() + '" is a reserved event name');
         }
         args.unshift(ev);
         const packet = {
@@ -7255,6 +7346,7 @@ class Socket extends Emitter_1 {
         const discardPacket = this.flags.volatile && (!isTransportWritable || !this.connected);
         if (discardPacket) ;
         else if (this.connected) {
+            this.notifyOutgoingListeners(packet);
             this.packet(packet);
         }
         else {
@@ -7328,13 +7420,13 @@ class Socket extends Emitter_1 {
      * Called upon engine `close`.
      *
      * @param reason
+     * @param description
      * @private
      */
-    onclose(reason) {
+    onclose(reason, description) {
         this.connected = false;
-        this.disconnected = true;
         delete this.id;
-        this.emitReserved("disconnect", reason);
+        this.emitReserved("disconnect", reason, description);
     }
     /**
      * Called with socket packet.
@@ -7357,14 +7449,10 @@ class Socket extends Emitter_1 {
                 }
                 break;
             case PacketType.EVENT:
-                this.onevent(packet);
-                break;
             case PacketType.BINARY_EVENT:
                 this.onevent(packet);
                 break;
             case PacketType.ACK:
-                this.onack(packet);
-                break;
             case PacketType.BINARY_ACK:
                 this.onack(packet);
                 break;
@@ -7448,7 +7536,6 @@ class Socket extends Emitter_1 {
     onconnect(id) {
         this.id = id;
         this.connected = true;
-        this.disconnected = false;
         this.emitBuffered();
         this.emitReserved("connect");
     }
@@ -7460,7 +7547,10 @@ class Socket extends Emitter_1 {
     emitBuffered() {
         this.receiveBuffer.forEach((args) => this.emitEvent(args));
         this.receiveBuffer = [];
-        this.sendBuffer.forEach((packet) => this.packet(packet));
+        this.sendBuffer.forEach((packet) => {
+            this.notifyOutgoingListeners(packet);
+            this.packet(packet);
+        });
         this.sendBuffer = [];
     }
     /**
@@ -7488,10 +7578,20 @@ class Socket extends Emitter_1 {
         this.io["_destroy"](this);
     }
     /**
-     * Disconnects the socket manually.
+     * Disconnects the socket manually. In that case, the socket will not try to reconnect.
+     *
+     * If this is the last active Socket instance of the {@link Manager}, the low-level connection will be closed.
+     *
+     * @example
+     * const socket = io();
+     *
+     * socket.on("disconnect", (reason) => {
+     *   // console.log(reason); prints "io client disconnect"
+     * });
+     *
+     * socket.disconnect();
      *
      * @return self
-     * @public
      */
     disconnect() {
         if (this.connected) {
@@ -7506,10 +7606,9 @@ class Socket extends Emitter_1 {
         return this;
     }
     /**
-     * Alias for disconnect()
+     * Alias for {@link disconnect()}.
      *
      * @return self
-     * @public
      */
     close() {
         return this.disconnect();
@@ -7517,9 +7616,11 @@ class Socket extends Emitter_1 {
     /**
      * Sets the compress flag.
      *
+     * @example
+     * socket.compress(false).emit("hello");
+     *
      * @param compress - if `true`, compresses the sending data
      * @return self
-     * @public
      */
     compress(compress) {
         this.flags.compress = compress;
@@ -7529,8 +7630,10 @@ class Socket extends Emitter_1 {
      * Sets a modifier for a subsequent event emission that the event message will be dropped when this socket is not
      * ready to send messages.
      *
+     * @example
+     * socket.volatile.emit("hello"); // the server may or may not receive it
+     *
      * @returns self
-     * @public
      */
     get volatile() {
         this.flags.volatile = true;
@@ -7540,16 +7643,14 @@ class Socket extends Emitter_1 {
      * Sets a modifier for a subsequent event emission that the callback will be called with an error when the
      * given number of milliseconds have elapsed without an acknowledgement from the server:
      *
-     * ```
+     * @example
      * socket.timeout(5000).emit("my-event", (err) => {
      *   if (err) {
      *     // the server did not acknowledge the event in the given delay
      *   }
      * });
-     * ```
      *
      * @returns self
-     * @public
      */
     timeout(timeout) {
         this.flags.timeout = timeout;
@@ -7559,8 +7660,12 @@ class Socket extends Emitter_1 {
      * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
      * callback.
      *
+     * @example
+     * socket.onAny((event, ...args) => {
+     *   console.log(`got ${event}`);
+     * });
+     *
      * @param listener
-     * @public
      */
     onAny(listener) {
         this._anyListeners = this._anyListeners || [];
@@ -7571,8 +7676,12 @@ class Socket extends Emitter_1 {
      * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
      * callback. The listener is added to the beginning of the listeners array.
      *
+     * @example
+     * socket.prependAny((event, ...args) => {
+     *   console.log(`got event ${event}`);
+     * });
+     *
      * @param listener
-     * @public
      */
     prependAny(listener) {
         this._anyListeners = this._anyListeners || [];
@@ -7582,8 +7691,20 @@ class Socket extends Emitter_1 {
     /**
      * Removes the listener that will be fired when any event is emitted.
      *
+     * @example
+     * const catchAllListener = (event, ...args) => {
+     *   console.log(`got event ${event}`);
+     * }
+     *
+     * socket.onAny(catchAllListener);
+     *
+     * // remove a specific listener
+     * socket.offAny(catchAllListener);
+     *
+     * // or remove all listeners
+     * socket.offAny();
+     *
      * @param listener
-     * @public
      */
     offAny(listener) {
         if (!this._anyListeners) {
@@ -7606,19 +7727,105 @@ class Socket extends Emitter_1 {
     /**
      * Returns an array of listeners that are listening for any event that is specified. This array can be manipulated,
      * e.g. to remove listeners.
-     *
-     * @public
      */
     listenersAny() {
         return this._anyListeners || [];
     }
+    /**
+     * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
+     * callback.
+     *
+     * Note: acknowledgements sent to the server are not included.
+     *
+     * @example
+     * socket.onAnyOutgoing((event, ...args) => {
+     *   console.log(`sent event ${event}`);
+     * });
+     *
+     * @param listener
+     */
+    onAnyOutgoing(listener) {
+        this._anyOutgoingListeners = this._anyOutgoingListeners || [];
+        this._anyOutgoingListeners.push(listener);
+        return this;
+    }
+    /**
+     * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
+     * callback. The listener is added to the beginning of the listeners array.
+     *
+     * Note: acknowledgements sent to the server are not included.
+     *
+     * @example
+     * socket.prependAnyOutgoing((event, ...args) => {
+     *   console.log(`sent event ${event}`);
+     * });
+     *
+     * @param listener
+     */
+    prependAnyOutgoing(listener) {
+        this._anyOutgoingListeners = this._anyOutgoingListeners || [];
+        this._anyOutgoingListeners.unshift(listener);
+        return this;
+    }
+    /**
+     * Removes the listener that will be fired when any event is emitted.
+     *
+     * @example
+     * const catchAllListener = (event, ...args) => {
+     *   console.log(`sent event ${event}`);
+     * }
+     *
+     * socket.onAnyOutgoing(catchAllListener);
+     *
+     * // remove a specific listener
+     * socket.offAnyOutgoing(catchAllListener);
+     *
+     * // or remove all listeners
+     * socket.offAnyOutgoing();
+     *
+     * @param [listener] - the catch-all listener (optional)
+     */
+    offAnyOutgoing(listener) {
+        if (!this._anyOutgoingListeners) {
+            return this;
+        }
+        if (listener) {
+            const listeners = this._anyOutgoingListeners;
+            for (let i = 0; i < listeners.length; i++) {
+                if (listener === listeners[i]) {
+                    listeners.splice(i, 1);
+                    return this;
+                }
+            }
+        }
+        else {
+            this._anyOutgoingListeners = [];
+        }
+        return this;
+    }
+    /**
+     * Returns an array of listeners that are listening for any event that is specified. This array can be manipulated,
+     * e.g. to remove listeners.
+     */
+    listenersAnyOutgoing() {
+        return this._anyOutgoingListeners || [];
+    }
+    /**
+     * Notify the listeners for each packet sent
+     *
+     * @param packet
+     *
+     * @private
+     */
+    notifyOutgoingListeners(packet) {
+        if (this._anyOutgoingListeners && this._anyOutgoingListeners.length) {
+            const listeners = this._anyOutgoingListeners.slice();
+            for (const listener of listeners) {
+                listener.apply(this, packet.data);
+            }
+        }
+    }
 }
-
-/**
- * Expose `Backoff`.
- */
-
-var backo2 = Backoff;
 
 /**
  * Initialize backoff timer with `opts`.
@@ -7631,74 +7838,63 @@ var backo2 = Backoff;
  * @param {Object} opts
  * @api public
  */
-
 function Backoff(opts) {
-  opts = opts || {};
-  this.ms = opts.min || 100;
-  this.max = opts.max || 10000;
-  this.factor = opts.factor || 2;
-  this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
-  this.attempts = 0;
+    opts = opts || {};
+    this.ms = opts.min || 100;
+    this.max = opts.max || 10000;
+    this.factor = opts.factor || 2;
+    this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
+    this.attempts = 0;
 }
-
 /**
  * Return the backoff duration.
  *
  * @return {Number}
  * @api public
  */
-
-Backoff.prototype.duration = function(){
-  var ms = this.ms * Math.pow(this.factor, this.attempts++);
-  if (this.jitter) {
-    var rand =  Math.random();
-    var deviation = Math.floor(rand * this.jitter * ms);
-    ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
-  }
-  return Math.min(ms, this.max) | 0;
+Backoff.prototype.duration = function () {
+    var ms = this.ms * Math.pow(this.factor, this.attempts++);
+    if (this.jitter) {
+        var rand = Math.random();
+        var deviation = Math.floor(rand * this.jitter * ms);
+        ms = (Math.floor(rand * 10) & 1) == 0 ? ms - deviation : ms + deviation;
+    }
+    return Math.min(ms, this.max) | 0;
 };
-
 /**
  * Reset the number of attempts.
  *
  * @api public
  */
-
-Backoff.prototype.reset = function(){
-  this.attempts = 0;
+Backoff.prototype.reset = function () {
+    this.attempts = 0;
 };
-
 /**
  * Set the minimum duration
  *
  * @api public
  */
-
-Backoff.prototype.setMin = function(min){
-  this.ms = min;
+Backoff.prototype.setMin = function (min) {
+    this.ms = min;
 };
-
 /**
  * Set the maximum duration
  *
  * @api public
  */
-
-Backoff.prototype.setMax = function(max){
-  this.max = max;
+Backoff.prototype.setMax = function (max) {
+    this.max = max;
 };
-
 /**
  * Set the jitter
  *
  * @api public
  */
-
-Backoff.prototype.setJitter = function(jitter){
-  this.jitter = jitter;
+Backoff.prototype.setJitter = function (jitter) {
+    this.jitter = jitter;
 };
 
-class Manager extends Emitter_1 {
+class Manager extends Emitter {
     constructor(uri, opts) {
         var _a;
         super();
@@ -7717,7 +7913,7 @@ class Manager extends Emitter_1 {
         this.reconnectionDelay(opts.reconnectionDelay || 1000);
         this.reconnectionDelayMax(opts.reconnectionDelayMax || 5000);
         this.randomizationFactor((_a = opts.randomizationFactor) !== null && _a !== void 0 ? _a : 0.5);
-        this.backoff = new backo2({
+        this.backoff = new Backoff({
             min: this.reconnectionDelay(),
             max: this.reconnectionDelayMax(),
             jitter: this.randomizationFactor(),
@@ -7883,7 +8079,12 @@ class Manager extends Emitter_1 {
      * @private
      */
     ondata(data) {
-        this.decoder.add(data);
+        try {
+            this.decoder.add(data);
+        }
+        catch (e) {
+            this.onclose("parse error", e);
+        }
     }
     /**
      * Called when parser fully decodes a packet.
@@ -7891,7 +8092,10 @@ class Manager extends Emitter_1 {
      * @private
      */
     ondecoded(packet) {
-        this.emitReserved("packet", packet);
+        // the nextTick call prevents an exception in a user-provided event listener from triggering a disconnection due to a "parse error"
+        nextTick(() => {
+            this.emitReserved("packet", packet);
+        }, this.setTimeoutFn);
     }
     /**
      * Called upon socket error.
@@ -7978,11 +8182,11 @@ class Manager extends Emitter_1 {
      *
      * @private
      */
-    onclose(reason) {
+    onclose(reason, description) {
         this.cleanup();
         this.backoff.reset();
         this._readyState = "closed";
-        this.emitReserved("close", reason);
+        this.emitReserved("close", reason, description);
         if (this._reconnection && !this.skipReconnect) {
             this.reconnect();
         }
@@ -8097,11 +8301,9 @@ var io = /*#__PURE__*/Object.freeze({
 });
 
 const SimpleSignalClient = require('simple-signal-client');
-
 var script$1 = /*#__PURE__*/defineComponent({
   name: 'vue-webrtc',
   components: {},
-
   data() {
     return {
       signalClient: null,
@@ -8110,7 +8312,6 @@ var script$1 = /*#__PURE__*/defineComponent({
       socket: null
     };
   },
-
   props: {
     roomId: {
       type: String,
@@ -8118,10 +8319,11 @@ var script$1 = /*#__PURE__*/defineComponent({
     },
     socketURL: {
       type: String,
-      default: 'https://weston-vue-webrtc-lobby.azurewebsites.net' //default: 'https://localhost:3000'
+      default: 'https://weston-vue-webrtc-lobby.azurewebsites.net'
+      //default: 'https://localhost:3000'
       //default: 'https://192.168.1.201:3000'
-
     },
+
     cameraHeight: {
       type: [Number, String],
       default: 160
@@ -8148,16 +8350,13 @@ var script$1 = /*#__PURE__*/defineComponent({
     },
     peerOptions: {
       type: Object,
-
       // NOTE: use these options: https://github.com/feross/simple-peer
       default() {
         return {};
       }
-
     },
     ioOptions: {
       type: Object,
-
       // NOTE: use these options: https://socket.io/docs/v4/client-options/
       default() {
         return {
@@ -8165,7 +8364,6 @@ var script$1 = /*#__PURE__*/defineComponent({
           transports: ['polling', 'websocket']
         };
       }
-
     },
     deviceId: {
       type: String,
@@ -8173,9 +8371,7 @@ var script$1 = /*#__PURE__*/defineComponent({
     }
   },
   watch: {},
-
   mounted() {},
-
   methods: {
     async join() {
       var that = this;
@@ -8186,7 +8382,6 @@ var script$1 = /*#__PURE__*/defineComponent({
         video: that.enableVideo,
         audio: that.enableAudio
       };
-
       if (that.deviceId && that.enableVideo) {
         constraints.video = {
           deviceId: {
@@ -8194,16 +8389,13 @@ var script$1 = /*#__PURE__*/defineComponent({
           }
         };
       }
-
       const localStream = await navigator.mediaDevices.getUserMedia(constraints);
       this.log('opened', localStream);
       this.joinedRoom(localStream, true);
       this.signalClient.once('discover', discoveryData => {
         that.log('discovered', discoveryData);
-
         async function connectToPeer(peerID) {
           if (peerID == that.socket.id) return;
-
           try {
             that.log('Connecting to peer');
             const {
@@ -8218,7 +8410,6 @@ var script$1 = /*#__PURE__*/defineComponent({
             that.log('Error connecting to peer');
           }
         }
-
         discoveryData.peers.forEach(peerID => connectToPeer(peerID));
         that.$emit('opened-room', that.roomId);
       });
@@ -8236,7 +8427,6 @@ var script$1 = /*#__PURE__*/defineComponent({
       });
       this.signalClient.discover(that.roomId);
     },
-
     onPeer(peer, localStream) {
       var that = this;
       that.log('onPeer');
@@ -8258,13 +8448,11 @@ var script$1 = /*#__PURE__*/defineComponent({
         });
       });
     },
-
     joinedRoom(stream, isLocal) {
       var that = this;
       let found = that.videoList.find(video => {
         return video.id === stream.id;
       });
-
       if (found === undefined) {
         let video = {
           id: stream.id,
@@ -8274,7 +8462,6 @@ var script$1 = /*#__PURE__*/defineComponent({
         };
         that.videoList.push(video);
       }
-
       setTimeout(function () {
         for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
           if (that.$refs.videos[i].id === stream.id) {
@@ -8285,7 +8472,6 @@ var script$1 = /*#__PURE__*/defineComponent({
       }, 500);
       that.$emit('joined-room', stream.id);
     },
-
     leave() {
       this.videoList.forEach(v => v.stream.getTracks().forEach(t => t.stop()));
       this.videoList = [];
@@ -8295,14 +8481,11 @@ var script$1 = /*#__PURE__*/defineComponent({
       this.socket.destroy();
       this.socket = null;
     },
-
     capture() {
       return this.getCanvas().toDataURL(this.screenshotFormat);
     },
-
     getCanvas() {
       let video = this.$refs.videos[0];
-
       if (video !== null && !this.ctx) {
         let canvas = document.createElement('canvas');
         canvas.height = video.clientHeight;
@@ -8310,7 +8493,6 @@ var script$1 = /*#__PURE__*/defineComponent({
         this.canvas = canvas;
         this.ctx = canvas.getContext('2d');
       }
-
       const {
         ctx,
         canvas
@@ -8318,15 +8500,12 @@ var script$1 = /*#__PURE__*/defineComponent({
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       return canvas;
     },
-
     async shareScreen() {
       var that = this;
-
       if (navigator.mediaDevices == undefined) {
         that.log('Error: https is required to load cameras');
         return;
       }
-
       try {
         var screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: true,
@@ -8339,24 +8518,21 @@ var script$1 = /*#__PURE__*/defineComponent({
         that.log('Media error: ' + JSON.stringify(e));
       }
     },
-
     log(message, data) {
       if (this.enableLogs) {
         console.log(message);
-
         if (data != null) {
           console.log(data);
         }
       }
     }
-
   }
 });
 
 const _hoisted_1$1 = {
   class: "video-list"
 };
-const _hoisted_2$1 = ["video"];
+const _hoisted_2 = ["video"];
 const _hoisted_3 = ["height", "muted", "id"];
 function render$1(_ctx, _cache, $props, $setup, $data, $options) {
   return openBlock(), createElementBlock("div", _hoisted_1$1, [(openBlock(true), createElementBlock(Fragment, null, renderList(_ctx.videoList, item => {
@@ -8373,7 +8549,7 @@ function render$1(_ctx, _cache, $props, $setup, $data, $options) {
       height: _ctx.cameraHeight,
       muted: item.muted,
       id: item.id
-    }, null, 8, _hoisted_3)], 8, _hoisted_2$1);
+    }, null, 8, _hoisted_3)], 8, _hoisted_2);
   }), 128))]);
 }
 
@@ -8412,7 +8588,6 @@ script$1.__scopeId = "data-v-41044b41";
 
 var script = /*#__PURE__*/defineComponent({
   name: 'VueWebrtcSample',
-
   // vue component name
   data() {
     return {
@@ -8424,7 +8599,6 @@ var script = /*#__PURE__*/defineComponent({
       }
     };
   },
-
   computed: {
     changedBy() {
       const {
@@ -8433,7 +8607,6 @@ var script = /*#__PURE__*/defineComponent({
       if (!message.action) return 'initialized';
       return `${message.action} ${message.amount || ''}`.trim();
     }
-
   },
   methods: {
     increment(arg) {
@@ -8442,31 +8615,25 @@ var script = /*#__PURE__*/defineComponent({
       this.message.action = 'incremented by';
       this.message.amount = amount;
     },
-
     decrement(arg) {
       const amount = typeof arg !== 'number' ? 1 : arg;
       this.counter -= amount;
       this.message.action = 'decremented by';
       this.message.amount = amount;
     },
-
     reset() {
       this.counter = this.initCounter;
       this.message.action = 'reset';
       this.message.amount = null;
     }
-
   }
 });
 
 const _hoisted_1 = {
   class: "vue-webrtc-sample"
 };
-
-const _hoisted_2 = /*#__PURE__*/createTextVNode(".");
-
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return openBlock(), createElementBlock("div", _hoisted_1, [createElementVNode("p", null, [createTextVNode("The counter was " + toDisplayString(_ctx.changedBy) + " to ", 1), createElementVNode("b", null, toDisplayString(_ctx.counter), 1), _hoisted_2]), createElementVNode("button", {
+  return openBlock(), createElementBlock("div", _hoisted_1, [createElementVNode("p", null, [createTextVNode("The counter was " + toDisplayString(_ctx.changedBy) + " to ", 1), createElementVNode("b", null, toDisplayString(_ctx.counter), 1), createTextVNode(".")]), createElementVNode("button", {
     onClick: _cache[0] || (_cache[0] = function () {
       return _ctx.increment && _ctx.increment(...arguments);
     })
@@ -8502,11 +8669,12 @@ var components = /*#__PURE__*/Object.freeze({
 
 // Import vue components
 
+// install function executed by Vue.use()
 const install = function installVueWebrtc(app) {
   Object.entries(components).forEach(_ref => {
     let [componentName, component] = _ref;
     app.component(componentName, component);
   });
-}; // Create module definition for Vue.use()
+};
 
 export { script$1 as VueWebRTC, script as VueWebrtcSample, install as default };

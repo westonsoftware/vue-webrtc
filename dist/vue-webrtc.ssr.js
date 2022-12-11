@@ -1,4 +1,332 @@
-'use strict';var fs=require('fs'),url$1=require('url'),child_process=require('child_process'),http=require('http'),https=require('https'),events=require('events'),net=require('net'),tls=require('tls'),crypto=require('crypto'),stream$1=require('stream'),zlib=require('zlib'),vue=require('vue');function _interopDefaultLegacy(e){return e&&typeof e==='object'&&'default'in e?e:{'default':e}}function _mergeNamespaces(n, m){m.forEach(function(e){e&&typeof e!=='string'&&!Array.isArray(e)&&Object.keys(e).forEach(function(k){if(k!=='default'&&!(k in n)){var d=Object.getOwnPropertyDescriptor(e,k);Object.defineProperty(n,k,d.get?d:{enumerable:true,get:function(){return e[k]}});}})});return Object.freeze(n);}var fs__default=/*#__PURE__*/_interopDefaultLegacy(fs);var url__default=/*#__PURE__*/_interopDefaultLegacy(url$1);var child_process__default=/*#__PURE__*/_interopDefaultLegacy(child_process);var http__default=/*#__PURE__*/_interopDefaultLegacy(http);var https__default=/*#__PURE__*/_interopDefaultLegacy(https);var events__default=/*#__PURE__*/_interopDefaultLegacy(events);var net__default=/*#__PURE__*/_interopDefaultLegacy(net);var tls__default=/*#__PURE__*/_interopDefaultLegacy(tls);var crypto__default=/*#__PURE__*/_interopDefaultLegacy(crypto);var stream__default=/*#__PURE__*/_interopDefaultLegacy(stream$1);var zlib__default=/*#__PURE__*/_interopDefaultLegacy(zlib);function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
+'use strict';var fs=require('fs'),url$1=require('url'),child_process=require('child_process'),http=require('http'),https=require('https'),events=require('events'),net=require('net'),tls=require('tls'),crypto=require('crypto'),stream$1=require('stream'),zlib=require('zlib'),vue=require('vue');function _interopDefaultLegacy(e){return e&&typeof e==='object'&&'default'in e?e:{'default':e}}function _mergeNamespaces(n, m){m.forEach(function(e){e&&typeof e!=='string'&&!Array.isArray(e)&&Object.keys(e).forEach(function(k){if(k!=='default'&&!(k in n)){var d=Object.getOwnPropertyDescriptor(e,k);Object.defineProperty(n,k,d.get?d:{enumerable:true,get:function(){return e[k]}});}})});return Object.freeze(n);}var fs__default=/*#__PURE__*/_interopDefaultLegacy(fs);var url__default=/*#__PURE__*/_interopDefaultLegacy(url$1);var child_process__default=/*#__PURE__*/_interopDefaultLegacy(child_process);var http__default=/*#__PURE__*/_interopDefaultLegacy(http);var https__default=/*#__PURE__*/_interopDefaultLegacy(https);var events__default=/*#__PURE__*/_interopDefaultLegacy(events);var net__default=/*#__PURE__*/_interopDefaultLegacy(net);var tls__default=/*#__PURE__*/_interopDefaultLegacy(tls);var crypto__default=/*#__PURE__*/_interopDefaultLegacy(crypto);var stream__default=/*#__PURE__*/_interopDefaultLegacy(stream$1);var zlib__default=/*#__PURE__*/_interopDefaultLegacy(zlib);function _iterableToArrayLimit(arr, i) {
+  var _i = null == arr ? null : "undefined" != typeof Symbol && arr[Symbol.iterator] || arr["@@iterator"];
+  if (null != _i) {
+    var _s,
+      _e,
+      _x,
+      _r,
+      _arr = [],
+      _n = !0,
+      _d = !1;
+    try {
+      if (_x = (_i = _i.call(arr)).next, 0 === i) {
+        if (Object(_i) !== _i) return;
+        _n = !1;
+      } else for (; !(_n = (_s = _x.call(_i)).done) && (_arr.push(_s.value), _arr.length !== i); _n = !0);
+    } catch (err) {
+      _d = !0, _e = err;
+    } finally {
+      try {
+        if (!_n && null != _i.return && (_r = _i.return(), Object(_r) !== _r)) return;
+      } finally {
+        if (_d) throw _e;
+      }
+    }
+    return _arr;
+  }
+}
+function _regeneratorRuntime() {
+  _regeneratorRuntime = function () {
+    return exports;
+  };
+  var exports = {},
+    Op = Object.prototype,
+    hasOwn = Op.hasOwnProperty,
+    defineProperty = Object.defineProperty || function (obj, key, desc) {
+      obj[key] = desc.value;
+    },
+    $Symbol = "function" == typeof Symbol ? Symbol : {},
+    iteratorSymbol = $Symbol.iterator || "@@iterator",
+    asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator",
+    toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
+  function define(obj, key, value) {
+    return Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: !0,
+      configurable: !0,
+      writable: !0
+    }), obj[key];
+  }
+  try {
+    define({}, "");
+  } catch (err) {
+    define = function (obj, key, value) {
+      return obj[key] = value;
+    };
+  }
+  function wrap(innerFn, outerFn, self, tryLocsList) {
+    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator,
+      generator = Object.create(protoGenerator.prototype),
+      context = new Context(tryLocsList || []);
+    return defineProperty(generator, "_invoke", {
+      value: makeInvokeMethod(innerFn, self, context)
+    }), generator;
+  }
+  function tryCatch(fn, obj, arg) {
+    try {
+      return {
+        type: "normal",
+        arg: fn.call(obj, arg)
+      };
+    } catch (err) {
+      return {
+        type: "throw",
+        arg: err
+      };
+    }
+  }
+  exports.wrap = wrap;
+  var ContinueSentinel = {};
+  function Generator() {}
+  function GeneratorFunction() {}
+  function GeneratorFunctionPrototype() {}
+  var IteratorPrototype = {};
+  define(IteratorPrototype, iteratorSymbol, function () {
+    return this;
+  });
+  var getProto = Object.getPrototypeOf,
+    NativeIteratorPrototype = getProto && getProto(getProto(values([])));
+  NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype);
+  var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype);
+  function defineIteratorMethods(prototype) {
+    ["next", "throw", "return"].forEach(function (method) {
+      define(prototype, method, function (arg) {
+        return this._invoke(method, arg);
+      });
+    });
+  }
+  function AsyncIterator(generator, PromiseImpl) {
+    function invoke(method, arg, resolve, reject) {
+      var record = tryCatch(generator[method], generator, arg);
+      if ("throw" !== record.type) {
+        var result = record.arg,
+          value = result.value;
+        return value && "object" == typeof value && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) {
+          invoke("next", value, resolve, reject);
+        }, function (err) {
+          invoke("throw", err, resolve, reject);
+        }) : PromiseImpl.resolve(value).then(function (unwrapped) {
+          result.value = unwrapped, resolve(result);
+        }, function (error) {
+          return invoke("throw", error, resolve, reject);
+        });
+      }
+      reject(record.arg);
+    }
+    var previousPromise;
+    defineProperty(this, "_invoke", {
+      value: function (method, arg) {
+        function callInvokeWithMethodAndArg() {
+          return new PromiseImpl(function (resolve, reject) {
+            invoke(method, arg, resolve, reject);
+          });
+        }
+        return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg();
+      }
+    });
+  }
+  function makeInvokeMethod(innerFn, self, context) {
+    var state = "suspendedStart";
+    return function (method, arg) {
+      if ("executing" === state) throw new Error("Generator is already running");
+      if ("completed" === state) {
+        if ("throw" === method) throw arg;
+        return doneResult();
+      }
+      for (context.method = method, context.arg = arg;;) {
+        var delegate = context.delegate;
+        if (delegate) {
+          var delegateResult = maybeInvokeDelegate(delegate, context);
+          if (delegateResult) {
+            if (delegateResult === ContinueSentinel) continue;
+            return delegateResult;
+          }
+        }
+        if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) {
+          if ("suspendedStart" === state) throw state = "completed", context.arg;
+          context.dispatchException(context.arg);
+        } else "return" === context.method && context.abrupt("return", context.arg);
+        state = "executing";
+        var record = tryCatch(innerFn, self, context);
+        if ("normal" === record.type) {
+          if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue;
+          return {
+            value: record.arg,
+            done: context.done
+          };
+        }
+        "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg);
+      }
+    };
+  }
+  function maybeInvokeDelegate(delegate, context) {
+    var methodName = context.method,
+      method = delegate.iterator[methodName];
+    if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator.return && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel;
+    var record = tryCatch(method, delegate.iterator, context.arg);
+    if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel;
+    var info = record.arg;
+    return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel);
+  }
+  function pushTryEntry(locs) {
+    var entry = {
+      tryLoc: locs[0]
+    };
+    1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry);
+  }
+  function resetTryEntry(entry) {
+    var record = entry.completion || {};
+    record.type = "normal", delete record.arg, entry.completion = record;
+  }
+  function Context(tryLocsList) {
+    this.tryEntries = [{
+      tryLoc: "root"
+    }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0);
+  }
+  function values(iterable) {
+    if (iterable) {
+      var iteratorMethod = iterable[iteratorSymbol];
+      if (iteratorMethod) return iteratorMethod.call(iterable);
+      if ("function" == typeof iterable.next) return iterable;
+      if (!isNaN(iterable.length)) {
+        var i = -1,
+          next = function next() {
+            for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next;
+            return next.value = undefined, next.done = !0, next;
+          };
+        return next.next = next;
+      }
+    }
+    return {
+      next: doneResult
+    };
+  }
+  function doneResult() {
+    return {
+      value: undefined,
+      done: !0
+    };
+  }
+  return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", {
+    value: GeneratorFunctionPrototype,
+    configurable: !0
+  }), defineProperty(GeneratorFunctionPrototype, "constructor", {
+    value: GeneratorFunction,
+    configurable: !0
+  }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) {
+    var ctor = "function" == typeof genFun && genFun.constructor;
+    return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name));
+  }, exports.mark = function (genFun) {
+    return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun;
+  }, exports.awrap = function (arg) {
+    return {
+      __await: arg
+    };
+  }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
+    return this;
+  }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) {
+    void 0 === PromiseImpl && (PromiseImpl = Promise);
+    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl);
+    return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) {
+      return result.done ? result.value : iter.next();
+    });
+  }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () {
+    return this;
+  }), define(Gp, "toString", function () {
+    return "[object Generator]";
+  }), exports.keys = function (val) {
+    var object = Object(val),
+      keys = [];
+    for (var key in object) keys.push(key);
+    return keys.reverse(), function next() {
+      for (; keys.length;) {
+        var key = keys.pop();
+        if (key in object) return next.value = key, next.done = !1, next;
+      }
+      return next.done = !0, next;
+    };
+  }, exports.values = values, Context.prototype = {
+    constructor: Context,
+    reset: function (skipTempReset) {
+      if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined);
+    },
+    stop: function () {
+      this.done = !0;
+      var rootRecord = this.tryEntries[0].completion;
+      if ("throw" === rootRecord.type) throw rootRecord.arg;
+      return this.rval;
+    },
+    dispatchException: function (exception) {
+      if (this.done) throw exception;
+      var context = this;
+      function handle(loc, caught) {
+        return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught;
+      }
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i],
+          record = entry.completion;
+        if ("root" === entry.tryLoc) return handle("end");
+        if (entry.tryLoc <= this.prev) {
+          var hasCatch = hasOwn.call(entry, "catchLoc"),
+            hasFinally = hasOwn.call(entry, "finallyLoc");
+          if (hasCatch && hasFinally) {
+            if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0);
+            if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc);
+          } else if (hasCatch) {
+            if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0);
+          } else {
+            if (!hasFinally) throw new Error("try statement without catch or finally");
+            if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc);
+          }
+        }
+      }
+    },
+    abrupt: function (type, arg) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) {
+          var finallyEntry = entry;
+          break;
+        }
+      }
+      finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null);
+      var record = finallyEntry ? finallyEntry.completion : {};
+      return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record);
+    },
+    complete: function (record, afterLoc) {
+      if ("throw" === record.type) throw record.arg;
+      return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel;
+    },
+    finish: function (finallyLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel;
+      }
+    },
+    catch: function (tryLoc) {
+      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
+        var entry = this.tryEntries[i];
+        if (entry.tryLoc === tryLoc) {
+          var record = entry.completion;
+          if ("throw" === record.type) {
+            var thrown = record.arg;
+            resetTryEntry(entry);
+          }
+          return thrown;
+        }
+      }
+      throw new Error("illegal catch attempt");
+    },
+    delegateYield: function (iterable, resultName, nextLoc) {
+      return this.delegate = {
+        iterator: values(iterable),
+        resultName: resultName,
+        nextLoc: nextLoc
+      }, "next" === this.method && (this.arg = undefined), ContinueSentinel;
+    }
+  }, exports;
+}
+function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
   try {
     var info = gen[key](arg);
     var value = info.value;
@@ -6,72 +334,34 @@
     reject(error);
     return;
   }
-
   if (info.done) {
     resolve(value);
   } else {
     Promise.resolve(value).then(_next, _throw);
   }
 }
-
 function _asyncToGenerator(fn) {
   return function () {
     var self = this,
-        args = arguments;
+      args = arguments;
     return new Promise(function (resolve, reject) {
       var gen = fn.apply(self, args);
-
       function _next(value) {
         asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
       }
-
       function _throw(err) {
         asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
       }
-
       _next(undefined);
     });
   };
 }
-
 function _slicedToArray(arr, i) {
   return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest();
 }
-
 function _arrayWithHoles(arr) {
   if (Array.isArray(arr)) return arr;
 }
-
-function _iterableToArrayLimit(arr, i) {
-  var _i = arr == null ? null : typeof Symbol !== "undefined" && arr[Symbol.iterator] || arr["@@iterator"];
-
-  if (_i == null) return;
-  var _arr = [];
-  var _n = true;
-  var _d = false;
-
-  var _s, _e;
-
-  try {
-    for (_i = _i.call(arr); !(_n = (_s = _i.next()).done); _n = true) {
-      _arr.push(_s.value);
-
-      if (i && _arr.length === i) break;
-    }
-  } catch (err) {
-    _d = true;
-    _e = err;
-  } finally {
-    try {
-      if (!_n && _i["return"] != null) _i["return"]();
-    } finally {
-      if (_d) throw _e;
-    }
-  }
-
-  return _arr;
-}
-
 function _unsupportedIterableToArray(o, minLen) {
   if (!o) return;
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -80,141 +370,513 @@ function _unsupportedIterableToArray(o, minLen) {
   if (n === "Map" || n === "Set") return Array.from(o);
   if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen);
 }
-
 function _arrayLikeToArray(arr, len) {
   if (len == null || len > arr.length) len = arr.length;
-
   for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i];
-
   return arr2;
 }
-
 function _nonIterableRest() {
   throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
-}/**
- * Parses an URI
+}const PACKET_TYPES = Object.create(null); // no Map = no polyfill
+PACKET_TYPES["open"] = "0";
+PACKET_TYPES["close"] = "1";
+PACKET_TYPES["ping"] = "2";
+PACKET_TYPES["pong"] = "3";
+PACKET_TYPES["message"] = "4";
+PACKET_TYPES["upgrade"] = "5";
+PACKET_TYPES["noop"] = "6";
+const PACKET_TYPES_REVERSE = Object.create(null);
+Object.keys(PACKET_TYPES).forEach(key => {
+    PACKET_TYPES_REVERSE[PACKET_TYPES[key]] = key;
+});
+const ERROR_PACKET = { type: "error", data: "parser error" };const encodePacket = ({ type, data }, supportsBinary, callback) => {
+    if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
+        const buffer = toBuffer$2(data);
+        return callback(encodeBuffer(buffer, supportsBinary));
+    }
+    // plain string
+    return callback(PACKET_TYPES[type] + (data || ""));
+};
+const toBuffer$2 = data => {
+    if (Buffer.isBuffer(data)) {
+        return data;
+    }
+    else if (data instanceof ArrayBuffer) {
+        return Buffer.from(data);
+    }
+    else {
+        return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
+    }
+};
+// only 'message' packets can contain binary, so the type prefix is not needed
+const encodeBuffer = (data, supportsBinary) => {
+    return supportsBinary ? data : "b" + data.toString("base64");
+};const decodePacket = (encodedPacket, binaryType) => {
+    if (typeof encodedPacket !== "string") {
+        return {
+            type: "message",
+            data: mapBinary(encodedPacket, binaryType)
+        };
+    }
+    const type = encodedPacket.charAt(0);
+    if (type === "b") {
+        const buffer = Buffer.from(encodedPacket.substring(1), "base64");
+        return {
+            type: "message",
+            data: mapBinary(buffer, binaryType)
+        };
+    }
+    if (!PACKET_TYPES_REVERSE[type]) {
+        return ERROR_PACKET;
+    }
+    return encodedPacket.length > 1
+        ? {
+            type: PACKET_TYPES_REVERSE[type],
+            data: encodedPacket.substring(1)
+        }
+        : {
+            type: PACKET_TYPES_REVERSE[type]
+        };
+};
+const mapBinary = (data, binaryType) => {
+    const isBuffer = Buffer.isBuffer(data);
+    switch (binaryType) {
+        case "arraybuffer":
+            return isBuffer ? toArrayBuffer$1(data) : data;
+        case "nodebuffer":
+        default:
+            return data; // assuming the data is already a Buffer
+    }
+};
+const toArrayBuffer$1 = (buffer) => {
+    const arrayBuffer = new ArrayBuffer(buffer.length);
+    const view = new Uint8Array(arrayBuffer);
+    for (let i = 0; i < buffer.length; i++) {
+        view[i] = buffer[i];
+    }
+    return arrayBuffer;
+};const SEPARATOR = String.fromCharCode(30); // see https://en.wikipedia.org/wiki/Delimiter#ASCII_delimited_text
+const encodePayload = (packets, callback) => {
+    // some packets may be added to the array while encoding, so the initial length must be saved
+    const length = packets.length;
+    const encodedPackets = new Array(length);
+    let count = 0;
+    packets.forEach((packet, i) => {
+        // force base64 encoding for binary packets
+        encodePacket(packet, false, encodedPacket => {
+            encodedPackets[i] = encodedPacket;
+            if (++count === length) {
+                callback(encodedPackets.join(SEPARATOR));
+            }
+        });
+    });
+};
+const decodePayload = (encodedPayload, binaryType) => {
+    const encodedPackets = encodedPayload.split(SEPARATOR);
+    const packets = [];
+    for (let i = 0; i < encodedPackets.length; i++) {
+        const decodedPacket = decodePacket(encodedPackets[i], binaryType);
+        packets.push(decodedPacket);
+        if (decodedPacket.type === "error") {
+            break;
+        }
+    }
+    return packets;
+};
+const protocol$1 = 4;/**
+ * Initialize a new `Emitter`.
  *
- * @author Steven Levithan <stevenlevithan.com> (MIT license)
+ * @api public
+ */
+
+function Emitter(obj) {
+  if (obj) return mixin(obj);
+}
+
+/**
+ * Mixin the emitter properties.
+ *
+ * @param {Object} obj
+ * @return {Object}
  * @api private
  */
 
-var re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
-
-var parts = [
-    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
-];
-
-var parseuri = function parseuri(str) {
-    var src = str,
-        b = str.indexOf('['),
-        e = str.indexOf(']');
-
-    if (b != -1 && e != -1) {
-        str = str.substring(0, b) + str.substring(b, e).replace(/:/g, ';') + str.substring(e, str.length);
-    }
-
-    var m = re.exec(str || ''),
-        uri = {},
-        i = 14;
-
-    while (i--) {
-        uri[parts[i]] = m[i] || '';
-    }
-
-    if (b != -1 && e != -1) {
-        uri.source = src;
-        uri.host = uri.host.substring(1, uri.host.length - 1).replace(/;/g, ':');
-        uri.authority = uri.authority.replace('[', '').replace(']', '').replace(/;/g, ':');
-        uri.ipv6uri = true;
-    }
-
-    uri.pathNames = pathNames(uri, uri['path']);
-    uri.queryKey = queryKey(uri, uri['query']);
-
-    return uri;
-};
-
-function pathNames(obj, path) {
-    var regx = /\/{2,9}/g,
-        names = path.replace(regx, "/").split("/");
-
-    if (path.substr(0, 1) == '/' || path.length === 0) {
-        names.splice(0, 1);
-    }
-    if (path.substr(path.length - 1, 1) == '/') {
-        names.splice(names.length - 1, 1);
-    }
-
-    return names;
+function mixin(obj) {
+  for (var key in Emitter.prototype) {
+    obj[key] = Emitter.prototype[key];
+  }
+  return obj;
 }
 
-function queryKey(uri, query) {
-    var data = {};
-
-    query.replace(/(?:^|&)([^&=]*)=?([^&]*)/g, function ($0, $1, $2) {
-        if ($1) {
-            data[$1] = $2;
-        }
-    });
-
-    return data;
-}/**
- * URL parser.
+/**
+ * Listen on the given `event` with `fn`.
  *
- * @param uri - url
- * @param path - the request path of the connection
- * @param loc - An object meant to mimic window.location.
- *        Defaults to window.location.
- * @public
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
  */
-function url(uri, path = "", loc) {
-    let obj = uri;
-    // default to window.location
-    loc = loc || (typeof location !== "undefined" && location);
-    if (null == uri)
-        uri = loc.protocol + "//" + loc.host;
-    // relative path support
-    if (typeof uri === "string") {
-        if ("/" === uri.charAt(0)) {
-            if ("/" === uri.charAt(1)) {
-                uri = loc.protocol + uri;
-            }
-            else {
-                uri = loc.host + uri;
-            }
-        }
-        if (!/^(https?|wss?):\/\//.test(uri)) {
-            if ("undefined" !== typeof loc) {
-                uri = loc.protocol + "//" + uri;
-            }
-            else {
-                uri = "https://" + uri;
-            }
-        }
-        // parse
-        obj = parseuri(uri);
+
+Emitter.prototype.on =
+Emitter.prototype.addEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
+    .push(fn);
+  return this;
+};
+
+/**
+ * Adds an `event` listener that will be invoked a single
+ * time then automatically removed.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.once = function(event, fn){
+  function on() {
+    this.off(event, on);
+    fn.apply(this, arguments);
+  }
+
+  on.fn = fn;
+  this.on(event, on);
+  return this;
+};
+
+/**
+ * Remove the given callback for `event` or all
+ * registered callbacks.
+ *
+ * @param {String} event
+ * @param {Function} fn
+ * @return {Emitter}
+ * @api public
+ */
+
+Emitter.prototype.off =
+Emitter.prototype.removeListener =
+Emitter.prototype.removeAllListeners =
+Emitter.prototype.removeEventListener = function(event, fn){
+  this._callbacks = this._callbacks || {};
+
+  // all
+  if (0 == arguments.length) {
+    this._callbacks = {};
+    return this;
+  }
+
+  // specific event
+  var callbacks = this._callbacks['$' + event];
+  if (!callbacks) return this;
+
+  // remove all handlers
+  if (1 == arguments.length) {
+    delete this._callbacks['$' + event];
+    return this;
+  }
+
+  // remove specific handler
+  var cb;
+  for (var i = 0; i < callbacks.length; i++) {
+    cb = callbacks[i];
+    if (cb === fn || cb.fn === fn) {
+      callbacks.splice(i, 1);
+      break;
     }
-    // make sure we treat `localhost:80` and `localhost` equally
-    if (!obj.port) {
-        if (/^(http|ws)$/.test(obj.protocol)) {
-            obj.port = "80";
+  }
+
+  // Remove event specific arrays for event types that no
+  // one is subscribed for to avoid memory leak.
+  if (callbacks.length === 0) {
+    delete this._callbacks['$' + event];
+  }
+
+  return this;
+};
+
+/**
+ * Emit `event` with the given args.
+ *
+ * @param {String} event
+ * @param {Mixed} ...
+ * @return {Emitter}
+ */
+
+Emitter.prototype.emit = function(event){
+  this._callbacks = this._callbacks || {};
+
+  var args = new Array(arguments.length - 1)
+    , callbacks = this._callbacks['$' + event];
+
+  for (var i = 1; i < arguments.length; i++) {
+    args[i - 1] = arguments[i];
+  }
+
+  if (callbacks) {
+    callbacks = callbacks.slice(0);
+    for (var i = 0, len = callbacks.length; i < len; ++i) {
+      callbacks[i].apply(this, args);
+    }
+  }
+
+  return this;
+};
+
+// alias used for reserved events (protected method)
+Emitter.prototype.emitReserved = Emitter.prototype.emit;
+
+/**
+ * Return array of callbacks for `event`.
+ *
+ * @param {String} event
+ * @return {Array}
+ * @api public
+ */
+
+Emitter.prototype.listeners = function(event){
+  this._callbacks = this._callbacks || {};
+  return this._callbacks['$' + event] || [];
+};
+
+/**
+ * Check if this emitter has `event` handlers.
+ *
+ * @param {String} event
+ * @return {Boolean}
+ * @api public
+ */
+
+Emitter.prototype.hasListeners = function(event){
+  return !! this.listeners(event).length;
+};const globalThisShim = global;function pick(obj, ...attr) {
+    return attr.reduce((acc, k) => {
+        if (obj.hasOwnProperty(k)) {
+            acc[k] = obj[k];
         }
-        else if (/^(http|ws)s$/.test(obj.protocol)) {
-            obj.port = "443";
+        return acc;
+    }, {});
+}
+// Keep a reference to the real timeout functions so they can be used when overridden
+const NATIVE_SET_TIMEOUT = setTimeout;
+const NATIVE_CLEAR_TIMEOUT = clearTimeout;
+function installTimerFunctions(obj, opts) {
+    if (opts.useNativeTimers) {
+        obj.setTimeoutFn = NATIVE_SET_TIMEOUT.bind(globalThisShim);
+        obj.clearTimeoutFn = NATIVE_CLEAR_TIMEOUT.bind(globalThisShim);
+    }
+    else {
+        obj.setTimeoutFn = setTimeout.bind(globalThisShim);
+        obj.clearTimeoutFn = clearTimeout.bind(globalThisShim);
+    }
+}
+// base64 encoded buffers are about 33% bigger (https://en.wikipedia.org/wiki/Base64)
+const BASE64_OVERHEAD = 1.33;
+// we could also have used `new Blob([obj]).size`, but it isn't supported in IE9
+function byteLength(obj) {
+    if (typeof obj === "string") {
+        return utf8Length(obj);
+    }
+    // arraybuffer or blob
+    return Math.ceil((obj.byteLength || obj.size) * BASE64_OVERHEAD);
+}
+function utf8Length(str) {
+    let c = 0, length = 0;
+    for (let i = 0, l = str.length; i < l; i++) {
+        c = str.charCodeAt(i);
+        if (c < 0x80) {
+            length += 1;
+        }
+        else if (c < 0x800) {
+            length += 2;
+        }
+        else if (c < 0xd800 || c >= 0xe000) {
+            length += 3;
+        }
+        else {
+            i++;
+            length += 4;
         }
     }
-    obj.path = obj.path || "/";
-    const ipv6 = obj.host.indexOf(":") !== -1;
-    const host = ipv6 ? "[" + obj.host + "]" : obj.host;
-    // define unique id
-    obj.id = obj.protocol + "://" + host + ":" + obj.port + path;
-    // define href
-    obj.href =
-        obj.protocol +
-            "://" +
-            host +
-            (loc && loc.port === obj.port ? "" : ":" + obj.port);
-    return obj;
+    return length;
+}class TransportError extends Error {
+    constructor(reason, description, context) {
+        super(reason);
+        this.description = description;
+        this.context = context;
+        this.type = "TransportError";
+    }
+}
+class Transport extends Emitter {
+    /**
+     * Transport abstract constructor.
+     *
+     * @param {Object} options.
+     * @api private
+     */
+    constructor(opts) {
+        super();
+        this.writable = false;
+        installTimerFunctions(this, opts);
+        this.opts = opts;
+        this.query = opts.query;
+        this.readyState = "";
+        this.socket = opts.socket;
+    }
+    /**
+     * Emits an error.
+     *
+     * @param {String} reason
+     * @param description
+     * @param context - the error context
+     * @return {Transport} for chaining
+     * @api protected
+     */
+    onError(reason, description, context) {
+        super.emitReserved("error", new TransportError(reason, description, context));
+        return this;
+    }
+    /**
+     * Opens the transport.
+     *
+     * @api public
+     */
+    open() {
+        if ("closed" === this.readyState || "" === this.readyState) {
+            this.readyState = "opening";
+            this.doOpen();
+        }
+        return this;
+    }
+    /**
+     * Closes the transport.
+     *
+     * @api public
+     */
+    close() {
+        if ("opening" === this.readyState || "open" === this.readyState) {
+            this.doClose();
+            this.onClose();
+        }
+        return this;
+    }
+    /**
+     * Sends multiple packets.
+     *
+     * @param {Array} packets
+     * @api public
+     */
+    send(packets) {
+        if ("open" === this.readyState) {
+            this.write(packets);
+        }
+    }
+    /**
+     * Called upon open
+     *
+     * @api protected
+     */
+    onOpen() {
+        this.readyState = "open";
+        this.writable = true;
+        super.emitReserved("open");
+    }
+    /**
+     * Called with data.
+     *
+     * @param {String} data
+     * @api protected
+     */
+    onData(data) {
+        const packet = decodePacket(data, this.socket.binaryType);
+        this.onPacket(packet);
+    }
+    /**
+     * Called with a decoded packet.
+     *
+     * @api protected
+     */
+    onPacket(packet) {
+        super.emitReserved("packet", packet);
+    }
+    /**
+     * Called upon close.
+     *
+     * @api protected
+     */
+    onClose(details) {
+        this.readyState = "closed";
+        super.emitReserved("close", details);
+    }
+}// imported from https://github.com/unshiftio/yeast
+const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split(''), length = 64, map = {};
+let seed = 0, i = 0, prev;
+/**
+ * Return a string representing the specified number.
+ *
+ * @param {Number} num The number to convert.
+ * @returns {String} The string representation of the number.
+ * @api public
+ */
+function encode$1(num) {
+    let encoded = '';
+    do {
+        encoded = alphabet[num % length] + encoded;
+        num = Math.floor(num / length);
+    } while (num > 0);
+    return encoded;
+}
+/**
+ * Yeast: A tiny growing id generator.
+ *
+ * @returns {String} A unique id.
+ * @api public
+ */
+function yeast() {
+    const now = encode$1(+new Date());
+    if (now !== prev)
+        return seed = 0, prev = now;
+    return now + '.' + encode$1(seed++);
+}
+//
+// Map each character to its index.
+//
+for (; i < length; i++)
+    map[alphabet[i]] = i;// imported from https://github.com/galkn/querystring
+/**
+ * Compiles a querystring
+ * Returns string representation of the object
+ *
+ * @param {Object}
+ * @api private
+ */
+function encode(obj) {
+    let str = '';
+    for (let i in obj) {
+        if (obj.hasOwnProperty(i)) {
+            if (str.length)
+                str += '&';
+            str += encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]);
+        }
+    }
+    return str;
+}
+/**
+ * Parses a simple querystring into an object
+ *
+ * @param {String} qs
+ * @api private
+ */
+function decode(qs) {
+    let qry = {};
+    let pairs = qs.split('&');
+    for (let i = 0, l = pairs.length; i < l; i++) {
+        let pair = pairs[i].split('=');
+        qry[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    }
+    return qry;
 }/**
  * Wrapper for built-in http.js to emulate the browser XMLHttpRequest object.
  *
@@ -236,10 +898,10 @@ var spawn = child_process__default["default"].spawn;
  * Module exports.
  */
 
-var XMLHttpRequest_1 = XMLHttpRequest$1;
+var XMLHttpRequest_1 = XMLHttpRequest;
 
 // backwards-compat
-XMLHttpRequest$1.XMLHttpRequest = XMLHttpRequest$1;
+XMLHttpRequest.XMLHttpRequest = XMLHttpRequest;
 
 /**
  * `XMLHttpRequest` constructor.
@@ -251,7 +913,7 @@ XMLHttpRequest$1.XMLHttpRequest = XMLHttpRequest$1;
  * @param {Object} opts optional "options" object
  */
 
-function XMLHttpRequest$1(opts) {
+function XMLHttpRequest(opts) {
 
   opts = opts || {};
 
@@ -885,520 +1547,41 @@ function XMLHttpRequest$1(opts) {
       self.dispatchEvent("loadend");
     }
   };
-}var XMLHttpRequestModule=/*#__PURE__*/Object.freeze(/*#__PURE__*/_mergeNamespaces({__proto__:null,'default':XMLHttpRequest_1,__moduleExports:XMLHttpRequest_1}, [XMLHttpRequest_1]));const XMLHttpRequest = XMLHttpRequest_1 || XMLHttpRequestModule;var globalThis = global;function pick(obj, ...attr) {
-    return attr.reduce((acc, k) => {
-        if (obj.hasOwnProperty(k)) {
-            acc[k] = obj[k];
-        }
-        return acc;
-    }, {});
-}
-// Keep a reference to the real timeout functions so they can be used when overridden
-const NATIVE_SET_TIMEOUT = setTimeout;
-const NATIVE_CLEAR_TIMEOUT = clearTimeout;
-function installTimerFunctions(obj, opts) {
-    if (opts.useNativeTimers) {
-        obj.setTimeoutFn = NATIVE_SET_TIMEOUT.bind(globalThis);
-        obj.clearTimeoutFn = NATIVE_CLEAR_TIMEOUT.bind(globalThis);
-    }
-    else {
-        obj.setTimeoutFn = setTimeout.bind(globalThis);
-        obj.clearTimeoutFn = clearTimeout.bind(globalThis);
-    }
-}/**
- * Expose `Emitter`.
- */
-
-var Emitter_1 = Emitter;
-
-/**
- * Initialize a new `Emitter`.
- *
- * @api public
- */
-
-function Emitter(obj) {
-  if (obj) return mixin(obj);
-}
-
-/**
- * Mixin the emitter properties.
- *
- * @param {Object} obj
- * @return {Object}
- * @api private
- */
-
-function mixin(obj) {
-  for (var key in Emitter.prototype) {
-    obj[key] = Emitter.prototype[key];
-  }
-  return obj;
-}
-
-/**
- * Listen on the given `event` with `fn`.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.on =
-Emitter.prototype.addEventListener = function(event, fn){
-  this._callbacks = this._callbacks || {};
-  (this._callbacks['$' + event] = this._callbacks['$' + event] || [])
-    .push(fn);
-  return this;
-};
-
-/**
- * Adds an `event` listener that will be invoked a single
- * time then automatically removed.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.once = function(event, fn){
-  function on() {
-    this.off(event, on);
-    fn.apply(this, arguments);
-  }
-
-  on.fn = fn;
-  this.on(event, on);
-  return this;
-};
-
-/**
- * Remove the given callback for `event` or all
- * registered callbacks.
- *
- * @param {String} event
- * @param {Function} fn
- * @return {Emitter}
- * @api public
- */
-
-Emitter.prototype.off =
-Emitter.prototype.removeListener =
-Emitter.prototype.removeAllListeners =
-Emitter.prototype.removeEventListener = function(event, fn){
-  this._callbacks = this._callbacks || {};
-
-  // all
-  if (0 == arguments.length) {
-    this._callbacks = {};
-    return this;
-  }
-
-  // specific event
-  var callbacks = this._callbacks['$' + event];
-  if (!callbacks) return this;
-
-  // remove all handlers
-  if (1 == arguments.length) {
-    delete this._callbacks['$' + event];
-    return this;
-  }
-
-  // remove specific handler
-  var cb;
-  for (var i = 0; i < callbacks.length; i++) {
-    cb = callbacks[i];
-    if (cb === fn || cb.fn === fn) {
-      callbacks.splice(i, 1);
-      break;
-    }
-  }
-
-  // Remove event specific arrays for event types that no
-  // one is subscribed for to avoid memory leak.
-  if (callbacks.length === 0) {
-    delete this._callbacks['$' + event];
-  }
-
-  return this;
-};
-
-/**
- * Emit `event` with the given args.
- *
- * @param {String} event
- * @param {Mixed} ...
- * @return {Emitter}
- */
-
-Emitter.prototype.emit = function(event){
-  this._callbacks = this._callbacks || {};
-
-  var args = new Array(arguments.length - 1)
-    , callbacks = this._callbacks['$' + event];
-
-  for (var i = 1; i < arguments.length; i++) {
-    args[i - 1] = arguments[i];
-  }
-
-  if (callbacks) {
-    callbacks = callbacks.slice(0);
-    for (var i = 0, len = callbacks.length; i < len; ++i) {
-      callbacks[i].apply(this, args);
-    }
-  }
-
-  return this;
-};
-
-// alias used for reserved events (protected method)
-Emitter.prototype.emitReserved = Emitter.prototype.emit;
-
-/**
- * Return array of callbacks for `event`.
- *
- * @param {String} event
- * @return {Array}
- * @api public
- */
-
-Emitter.prototype.listeners = function(event){
-  this._callbacks = this._callbacks || {};
-  return this._callbacks['$' + event] || [];
-};
-
-/**
- * Check if this emitter has `event` handlers.
- *
- * @param {String} event
- * @return {Boolean}
- * @api public
- */
-
-Emitter.prototype.hasListeners = function(event){
-  return !! this.listeners(event).length;
-};const PACKET_TYPES = Object.create(null); // no Map = no polyfill
-PACKET_TYPES["open"] = "0";
-PACKET_TYPES["close"] = "1";
-PACKET_TYPES["ping"] = "2";
-PACKET_TYPES["pong"] = "3";
-PACKET_TYPES["message"] = "4";
-PACKET_TYPES["upgrade"] = "5";
-PACKET_TYPES["noop"] = "6";
-const PACKET_TYPES_REVERSE = Object.create(null);
-Object.keys(PACKET_TYPES).forEach(key => {
-    PACKET_TYPES_REVERSE[PACKET_TYPES[key]] = key;
-});
-const ERROR_PACKET = { type: "error", data: "parser error" };const encodePacket = ({ type, data }, supportsBinary, callback) => {
-    if (data instanceof ArrayBuffer || ArrayBuffer.isView(data)) {
-        const buffer = toBuffer$2(data);
-        return callback(encodeBuffer(buffer, supportsBinary));
-    }
-    // plain string
-    return callback(PACKET_TYPES[type] + (data || ""));
-};
-const toBuffer$2 = data => {
-    if (Buffer.isBuffer(data)) {
-        return data;
-    }
-    else if (data instanceof ArrayBuffer) {
-        return Buffer.from(data);
-    }
-    else {
-        return Buffer.from(data.buffer, data.byteOffset, data.byteLength);
-    }
-};
-// only 'message' packets can contain binary, so the type prefix is not needed
-const encodeBuffer = (data, supportsBinary) => {
-    return supportsBinary ? data : "b" + data.toString("base64");
-};const decodePacket = (encodedPacket, binaryType) => {
-    if (typeof encodedPacket !== "string") {
-        return {
-            type: "message",
-            data: mapBinary(encodedPacket, binaryType)
-        };
-    }
-    const type = encodedPacket.charAt(0);
-    if (type === "b") {
-        const buffer = Buffer.from(encodedPacket.substring(1), "base64");
-        return {
-            type: "message",
-            data: mapBinary(buffer, binaryType)
-        };
-    }
-    if (!PACKET_TYPES_REVERSE[type]) {
-        return ERROR_PACKET;
-    }
-    return encodedPacket.length > 1
-        ? {
-            type: PACKET_TYPES_REVERSE[type],
-            data: encodedPacket.substring(1)
-        }
-        : {
-            type: PACKET_TYPES_REVERSE[type]
-        };
-};
-const mapBinary = (data, binaryType) => {
-    const isBuffer = Buffer.isBuffer(data);
-    switch (binaryType) {
-        case "arraybuffer":
-            return isBuffer ? toArrayBuffer$1(data) : data;
-        case "nodebuffer":
-        default:
-            return data; // assuming the data is already a Buffer
-    }
-};
-const toArrayBuffer$1 = buffer => {
-    const arrayBuffer = new ArrayBuffer(buffer.length);
-    const view = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < buffer.length; i++) {
-        view[i] = buffer[i];
-    }
-    return arrayBuffer;
-};const SEPARATOR = String.fromCharCode(30); // see https://en.wikipedia.org/wiki/Delimiter#ASCII_delimited_text
-const encodePayload = (packets, callback) => {
-    // some packets may be added to the array while encoding, so the initial length must be saved
-    const length = packets.length;
-    const encodedPackets = new Array(length);
-    let count = 0;
-    packets.forEach((packet, i) => {
-        // force base64 encoding for binary packets
-        encodePacket(packet, false, encodedPacket => {
-            encodedPackets[i] = encodedPacket;
-            if (++count === length) {
-                callback(encodedPackets.join(SEPARATOR));
-            }
-        });
+}var XMLHttpRequestModule=/*#__PURE__*/_mergeNamespaces({__proto__:null,'default':XMLHttpRequest_1,__moduleExports:XMLHttpRequest_1},[XMLHttpRequest_1]);const XHR = XMLHttpRequest_1 || XMLHttpRequestModule;function empty() { }
+const hasXHR2 = (function () {
+    const xhr = new XHR({
+        xdomain: false
     });
-};
-const decodePayload = (encodedPayload, binaryType) => {
-    const encodedPackets = encodedPayload.split(SEPARATOR);
-    const packets = [];
-    for (let i = 0; i < encodedPackets.length; i++) {
-        const decodedPacket = decodePacket(encodedPackets[i], binaryType);
-        packets.push(decodedPacket);
-        if (decodedPacket.type === "error") {
-            break;
-        }
-    }
-    return packets;
-};
-const protocol$1 = 4;class Transport extends Emitter_1 {
+    return null != xhr.responseType;
+})();
+class Polling extends Transport {
     /**
-     * Transport abstract constructor.
+     * XHR Polling constructor.
      *
-     * @param {Object} options.
-     * @api private
+     * @param {Object} opts
+     * @api public
      */
     constructor(opts) {
-        super();
-        this.writable = false;
-        installTimerFunctions(this, opts);
-        this.opts = opts;
-        this.query = opts.query;
-        this.readyState = "";
-        this.socket = opts.socket;
-    }
-    /**
-     * Emits an error.
-     *
-     * @param {String} str
-     * @return {Transport} for chaining
-     * @api protected
-     */
-    onError(msg, desc) {
-        const err = new Error(msg);
-        // @ts-ignore
-        err.type = "TransportError";
-        // @ts-ignore
-        err.description = desc;
-        super.emit("error", err);
-        return this;
-    }
-    /**
-     * Opens the transport.
-     *
-     * @api public
-     */
-    open() {
-        if ("closed" === this.readyState || "" === this.readyState) {
-            this.readyState = "opening";
-            this.doOpen();
-        }
-        return this;
-    }
-    /**
-     * Closes the transport.
-     *
-     * @api public
-     */
-    close() {
-        if ("opening" === this.readyState || "open" === this.readyState) {
-            this.doClose();
-            this.onClose();
-        }
-        return this;
-    }
-    /**
-     * Sends multiple packets.
-     *
-     * @param {Array} packets
-     * @api public
-     */
-    send(packets) {
-        if ("open" === this.readyState) {
-            this.write(packets);
-        }
-    }
-    /**
-     * Called upon open
-     *
-     * @api protected
-     */
-    onOpen() {
-        this.readyState = "open";
-        this.writable = true;
-        super.emit("open");
-    }
-    /**
-     * Called with data.
-     *
-     * @param {String} data
-     * @api protected
-     */
-    onData(data) {
-        const packet = decodePacket(data, this.socket.binaryType);
-        this.onPacket(packet);
-    }
-    /**
-     * Called with a decoded packet.
-     *
-     * @api protected
-     */
-    onPacket(packet) {
-        super.emit("packet", packet);
-    }
-    /**
-     * Called upon close.
-     *
-     * @api protected
-     */
-    onClose() {
-        this.readyState = "closed";
-        super.emit("close");
-    }
-}var alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_'.split('')
-  , length = 64
-  , map = {}
-  , seed = 0
-  , i = 0
-  , prev;
-
-/**
- * Return a string representing the specified number.
- *
- * @param {Number} num The number to convert.
- * @returns {String} The string representation of the number.
- * @api public
- */
-function encode$1(num) {
-  var encoded = '';
-
-  do {
-    encoded = alphabet[num % length] + encoded;
-    num = Math.floor(num / length);
-  } while (num > 0);
-
-  return encoded;
-}
-
-/**
- * Return the integer value specified by the given string.
- *
- * @param {String} str The string to convert.
- * @returns {Number} The integer value represented by the string.
- * @api public
- */
-function decode$1(str) {
-  var decoded = 0;
-
-  for (i = 0; i < str.length; i++) {
-    decoded = decoded * length + map[str.charAt(i)];
-  }
-
-  return decoded;
-}
-
-/**
- * Yeast: A tiny growing id generator.
- *
- * @returns {String} A unique id.
- * @api public
- */
-function yeast() {
-  var now = encode$1(+new Date());
-
-  if (now !== prev) return seed = 0, prev = now;
-  return now +'.'+ encode$1(seed++);
-}
-
-//
-// Map each character to its index.
-//
-for (; i < length; i++) map[alphabet[i]] = i;
-
-//
-// Expose the `yeast`, `encode` and `decode` functions.
-//
-yeast.encode = encode$1;
-yeast.decode = decode$1;
-var yeast_1 = yeast;/**
- * Compiles a querystring
- * Returns string representation of the object
- *
- * @param {Object}
- * @api private
- */
-
-var encode = function (obj) {
-  var str = '';
-
-  for (var i in obj) {
-    if (obj.hasOwnProperty(i)) {
-      if (str.length) str += '&';
-      str += encodeURIComponent(i) + '=' + encodeURIComponent(obj[i]);
-    }
-  }
-
-  return str;
-};
-
-/**
- * Parses a simple querystring into an object
- *
- * @param {String} qs
- * @api private
- */
-
-var decode = function(qs){
-  var qry = {};
-  var pairs = qs.split('&');
-  for (var i = 0, l = pairs.length; i < l; i++) {
-    var pair = pairs[i].split('=');
-    qry[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
-  }
-  return qry;
-};
-
-var parseqs = {
-	encode: encode,
-	decode: decode
-};class Polling extends Transport {
-    constructor() {
-        super(...arguments);
+        super(opts);
         this.polling = false;
+        if (typeof location !== "undefined") {
+            const isSSL = "https:" === location.protocol;
+            let port = location.port;
+            // some user agents have empty `location.port`
+            if (!port) {
+                port = isSSL ? "443" : "80";
+            }
+            this.xd =
+                (typeof location !== "undefined" &&
+                    opts.hostname !== location.hostname) ||
+                    port !== opts.port;
+            this.xs = opts.secure !== isSSL;
+        }
+        /**
+         * XHR supports binary
+         */
+        const forceBase64 = opts && opts.forceBase64;
+        this.supportsBinary = hasXHR2 && !forceBase64;
     }
     /**
      * Transport name.
@@ -1454,7 +1637,7 @@ var parseqs = {
     poll() {
         this.polling = true;
         this.doPoll();
-        this.emit("poll");
+        this.emitReserved("poll");
     }
     /**
      * Overloads onData to detect payloads.
@@ -1469,7 +1652,7 @@ var parseqs = {
             }
             // if its a close packet, we close the ongoing requests
             if ("close" === packet.type) {
-                this.onClose();
+                this.onClose({ description: "transport closed by the server" });
                 return false;
             }
             // otherwise bypass onData and handle the message
@@ -1481,7 +1664,7 @@ var parseqs = {
         if ("closed" !== this.readyState) {
             // if we got data we're not polling
             this.polling = false;
-            this.emit("pollComplete");
+            this.emitReserved("pollComplete");
             if ("open" === this.readyState) {
                 this.poll();
             }
@@ -1517,7 +1700,7 @@ var parseqs = {
         encodePayload(packets, data => {
             this.doWrite(data, () => {
                 this.writable = true;
-                this.emit("drain");
+                this.emitReserved("drain");
             });
         });
     }
@@ -1532,7 +1715,7 @@ var parseqs = {
         let port = "";
         // cache busting is forced
         if (false !== this.opts.timestampRequests) {
-            query[this.opts.timestampParam] = yeast_1();
+            query[this.opts.timestampParam] = yeast();
         }
         if (!this.supportsBinary && !query.sid) {
             query.b64 = 1;
@@ -1543,7 +1726,7 @@ var parseqs = {
                 ("http" === schema && Number(this.opts.port) !== 80))) {
             port = ":" + this.opts.port;
         }
-        const encodedQuery = parseqs.encode(query);
+        const encodedQuery = encode(query);
         const ipv6 = this.opts.hostname.indexOf(":") !== -1;
         return (schema +
             "://" +
@@ -1551,45 +1734,6 @@ var parseqs = {
             port +
             this.opts.path +
             (encodedQuery.length ? "?" + encodedQuery : ""));
-    }
-}/* global attachEvent */
-/**
- * Empty function
- */
-function empty() { }
-const hasXHR2 = (function () {
-    const xhr = new XMLHttpRequest({
-        xdomain: false
-    });
-    return null != xhr.responseType;
-})();
-class XHR extends Polling {
-    /**
-     * XHR Polling constructor.
-     *
-     * @param {Object} opts
-     * @api public
-     */
-    constructor(opts) {
-        super(opts);
-        if (typeof location !== "undefined") {
-            const isSSL = "https:" === location.protocol;
-            let port = location.port;
-            // some user agents have empty `location.port`
-            if (!port) {
-                port = isSSL ? "443" : "80";
-            }
-            this.xd =
-                (typeof location !== "undefined" &&
-                    opts.hostname !== location.hostname) ||
-                    port !== opts.port;
-            this.xs = opts.secure !== isSSL;
-        }
-        /**
-         * XHR supports binary
-         */
-        const forceBase64 = opts && opts.forceBase64;
-        this.supportsBinary = hasXHR2 && !forceBase64;
     }
     /**
      * Creates a request.
@@ -1614,8 +1758,8 @@ class XHR extends Polling {
             data: data
         });
         req.on("success", fn);
-        req.on("error", err => {
-            this.onError("xhr post error", err);
+        req.on("error", (xhrStatus, context) => {
+            this.onError("xhr post error", xhrStatus, context);
         });
     }
     /**
@@ -1626,13 +1770,13 @@ class XHR extends Polling {
     doPoll() {
         const req = this.request();
         req.on("data", this.onData.bind(this));
-        req.on("error", err => {
-            this.onError("xhr poll error", err);
+        req.on("error", (xhrStatus, context) => {
+            this.onError("xhr poll error", xhrStatus, context);
         });
         this.pollXhr = req;
     }
 }
-class Request extends Emitter_1 {
+class Request extends Emitter {
     /**
      * Request constructor
      *
@@ -1658,7 +1802,7 @@ class Request extends Emitter_1 {
         const opts = pick(this.opts, "agent", "pfx", "key", "passphrase", "cert", "ca", "ciphers", "rejectUnauthorized", "autoUnref");
         opts.xdomain = !!this.opts.xd;
         opts.xscheme = !!this.opts.xs;
-        const xhr = (this.xhr = new XMLHttpRequest(opts));
+        const xhr = (this.xhr = new XHR(opts));
         try {
             xhr.open(this.method, this.uri, this.async);
             try {
@@ -1720,30 +1864,12 @@ class Request extends Emitter_1 {
         }
     }
     /**
-     * Called upon successful response.
-     *
-     * @api private
-     */
-    onSuccess() {
-        this.emit("success");
-        this.cleanup();
-    }
-    /**
-     * Called if we have data.
-     *
-     * @api private
-     */
-    onData(data) {
-        this.emit("data", data);
-        this.onSuccess();
-    }
-    /**
      * Called upon error.
      *
      * @api private
      */
     onError(err) {
-        this.emit("error", err);
+        this.emitReserved("error", err, this.xhr);
         this.cleanup(true);
     }
     /**
@@ -1775,7 +1901,9 @@ class Request extends Emitter_1 {
     onLoad() {
         const data = this.xhr.responseText;
         if (data !== null) {
-            this.onData(data);
+            this.emitReserved("data", data);
+            this.emitReserved("success");
+            this.cleanup();
         }
     }
     /**
@@ -1801,7 +1929,7 @@ if (typeof document !== "undefined") {
         attachEvent("onunload", unloadHandler);
     }
     else if (typeof addEventListener === "function") {
-        const terminationEvent = "onpagehide" in globalThis ? "pagehide" : "unload";
+        const terminationEvent = "onpagehide" in globalThisShim ? "pagehide" : "unload";
         addEventListener(terminationEvent, unloadHandler, false);
     }
 }
@@ -3949,7 +4077,7 @@ function push(dest, name, elem) {
  * @return {Object} The parsed object
  * @public
  */
-function parse$2(header) {
+function parse$3(header) {
   const offers = Object.create(null);
   let params = Object.create(null);
   let mustUnescape = false;
@@ -4125,7 +4253,7 @@ function format$1(extensions) {
     .join(', ');
 }
 
-var extension = { format: format$1, parse: parse$2 };const { randomBytes, createHash: createHash$1 } = crypto__default["default"];
+var extension = { format: format$1, parse: parse$3 };const { randomBytes, createHash: createHash$1 } = crypto__default["default"];
 const { URL } = url__default["default"];
 
 
@@ -4144,7 +4272,7 @@ const {
 const {
   EventTarget: { addEventListener: addEventListener$1, removeEventListener: removeEventListener$1 }
 } = eventTarget;
-const { format, parse: parse$1 } = extension;
+const { format, parse: parse$2 } = extension;
 const { toBuffer } = bufferUtil;
 
 const readyStates = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
@@ -4929,7 +5057,7 @@ function initAsClient(websocket, address, protocols, options) {
       let extensions;
 
       try {
-        extensions = parse$1(secWebSocketExtensions);
+        extensions = parse$2(secWebSocketExtensions);
       } catch (err) {
         const message = 'Invalid Sec-WebSocket-Extensions header';
         abortHandshake$1(websocket, socket, message);
@@ -5449,7 +5577,7 @@ var stream = createWebSocketStream;const { tokenChars } = validation;
  * @return {Set} The subprotocol names
  * @public
  */
-function parse(header) {
+function parse$1(header) {
   const protocols = new Set();
   let start = -1;
   let end = -1;
@@ -5499,7 +5627,7 @@ function parse(header) {
   return protocols;
 }
 
-var subprotocol = { parse };const { createHash } = crypto__default["default"];
+var subprotocol = { parse: parse$1 };const { createHash } = crypto__default["default"];
 
 
 
@@ -6036,7 +6164,7 @@ class WS extends Transport {
                     : new WebSocket(uri, protocols, opts);
         }
         catch (err) {
-            return this.emit("error", err);
+            return this.emitReserved("error", err);
         }
         this.ws.binaryType = this.socket.binaryType || defaultBinaryType;
         this.addEventListeners();
@@ -6053,7 +6181,10 @@ class WS extends Transport {
             }
             this.onOpen();
         };
-        this.ws.onclose = this.onClose.bind(this);
+        this.ws.onclose = closeEvent => this.onClose({
+            description: "websocket connection closed",
+            context: closeEvent
+        });
         this.ws.onmessage = ev => this.onData(ev.data);
         this.ws.onerror = e => this.onError("websocket error", e);
     }
@@ -6078,7 +6209,9 @@ class WS extends Transport {
                         opts.compress = packet.options.compress;
                     }
                     if (this.opts.perMessageDeflate) {
-                        const len = "string" === typeof data ? Buffer.byteLength(data) : data.length;
+                        const len = 
+                        // @ts-ignore
+                        "string" === typeof data ? Buffer.byteLength(data) : data.length;
                         if (len < this.opts.perMessageDeflate.threshold) {
                             opts.compress = false;
                         }
@@ -6100,7 +6233,7 @@ class WS extends Transport {
                     // defer to next tick to allow Socket to clear writeBuffer
                     nextTick(() => {
                         this.writable = true;
-                        this.emit("drain");
+                        this.emitReserved("drain");
                     }, this.setTimeoutFn);
                 }
             });
@@ -6134,13 +6267,13 @@ class WS extends Transport {
         }
         // append timestamp to URI
         if (this.opts.timestampRequests) {
-            query[this.opts.timestampParam] = yeast_1();
+            query[this.opts.timestampParam] = yeast();
         }
         // communicate binary support capabilities
         if (!this.supportsBinary) {
             query.b64 = 1;
         }
-        const encodedQuery = parseqs.encode(query);
+        const encodedQuery = encode(query);
         const ipv6 = this.opts.hostname.indexOf(":") !== -1;
         return (schema +
             "://" +
@@ -6156,13 +6289,60 @@ class WS extends Transport {
      * @api public
      */
     check() {
-        return (!!WebSocket &&
-            !("__initialize" in WebSocket && this.name === WS.prototype.name));
+        return !!WebSocket;
     }
 }const transports = {
     websocket: WS,
-    polling: XHR
-};class Socket$1 extends Emitter_1 {
+    polling: Polling
+};// imported from https://github.com/galkn/parseuri
+/**
+ * Parses an URI
+ *
+ * @author Steven Levithan <stevenlevithan.com> (MIT license)
+ * @api private
+ */
+const re = /^(?:(?![^:@]+:[^:@\/]*@)(http|https|ws|wss):\/\/)?((?:(([^:@]*)(?::([^:@]*))?)?@)?((?:[a-f0-9]{0,4}:){2,7}[a-f0-9]{0,4}|[^:\/?#]*)(?::(\d*))?)(((\/(?:[^?#](?![^?#\/]*\.[^?#\/.]+(?:[?#]|$)))*\/?)?([^?#\/]*))(?:\?([^#]*))?(?:#(.*))?)/;
+const parts = [
+    'source', 'protocol', 'authority', 'userInfo', 'user', 'password', 'host', 'port', 'relative', 'path', 'directory', 'file', 'query', 'anchor'
+];
+function parse(str) {
+    const src = str, b = str.indexOf('['), e = str.indexOf(']');
+    if (b != -1 && e != -1) {
+        str = str.substring(0, b) + str.substring(b, e).replace(/:/g, ';') + str.substring(e, str.length);
+    }
+    let m = re.exec(str || ''), uri = {}, i = 14;
+    while (i--) {
+        uri[parts[i]] = m[i] || '';
+    }
+    if (b != -1 && e != -1) {
+        uri.source = src;
+        uri.host = uri.host.substring(1, uri.host.length - 1).replace(/;/g, ':');
+        uri.authority = uri.authority.replace('[', '').replace(']', '').replace(/;/g, ':');
+        uri.ipv6uri = true;
+    }
+    uri.pathNames = pathNames(uri, uri['path']);
+    uri.queryKey = queryKey(uri, uri['query']);
+    return uri;
+}
+function pathNames(obj, path) {
+    const regx = /\/{2,9}/g, names = path.replace(regx, "/").split("/");
+    if (path.slice(0, 1) == '/' || path.length === 0) {
+        names.splice(0, 1);
+    }
+    if (path.slice(-1) == '/') {
+        names.splice(names.length - 1, 1);
+    }
+    return names;
+}
+function queryKey(uri, query) {
+    const data = {};
+    query.replace(/(?:^|&)([^&=]*)=?([^&]*)/g, function ($0, $1, $2) {
+        if ($1) {
+            data[$1] = $2;
+        }
+    });
+    return data;
+}class Socket$1 extends Emitter {
     /**
      * Socket constructor.
      *
@@ -6177,7 +6357,7 @@ class WS extends Transport {
             uri = null;
         }
         if (uri) {
-            uri = parseuri(uri);
+            uri = parse(uri);
             opts.hostname = uri.host;
             opts.secure = uri.protocol === "https" || uri.protocol === "wss";
             opts.port = uri.port;
@@ -6185,7 +6365,7 @@ class WS extends Transport {
                 opts.query = uri.query;
         }
         else if (opts.host) {
-            opts.hostname = parseuri(opts.host).host;
+            opts.hostname = parse(opts.host).host;
         }
         installTimerFunctions(this, opts);
         this.secure =
@@ -6226,7 +6406,7 @@ class WS extends Transport {
         }, opts);
         this.opts.path = this.opts.path.replace(/\/$/, "") + "/";
         if (typeof this.opts.query === "string") {
-            this.opts.query = parseqs.decode(this.opts.query);
+            this.opts.query = decode(this.opts.query);
         }
         // set on handshake
         this.id = null;
@@ -6240,17 +6420,20 @@ class WS extends Transport {
                 // Firefox closes the connection when the "beforeunload" event is emitted but not Chrome. This event listener
                 // ensures every browser behaves the same (no "disconnect" event at the Socket.IO level when the page is
                 // closed/reloaded)
-                addEventListener("beforeunload", () => {
+                this.beforeunloadEventListener = () => {
                     if (this.transport) {
                         // silently close the transport
                         this.transport.removeAllListeners();
                         this.transport.close();
                     }
-                }, false);
+                };
+                addEventListener("beforeunload", this.beforeunloadEventListener, false);
             }
             if (this.hostname !== "localhost") {
                 this.offlineEventListener = () => {
-                    this.onClose("transport close");
+                    this.onClose("transport close", {
+                        description: "network connection lost"
+                    });
                 };
                 addEventListener("offline", this.offlineEventListener, false);
             }
@@ -6265,7 +6448,7 @@ class WS extends Transport {
      * @api private
      */
     createTransport(name) {
-        const query = clone(this.opts.query);
+        const query = Object.assign({}, this.opts.query);
         // append engine.io protocol identifier
         query.EIO = protocol$1;
         // transport name
@@ -6333,9 +6516,7 @@ class WS extends Transport {
             .on("drain", this.onDrain.bind(this))
             .on("packet", this.onPacket.bind(this))
             .on("error", this.onError.bind(this))
-            .on("close", () => {
-            this.onClose("transport close");
-        });
+            .on("close", reason => this.onClose("transport close", reason));
     }
     /**
      * Probes a transport.
@@ -6497,6 +6678,7 @@ class WS extends Transport {
         this.upgrades = this.filterUpgrades(data.upgrades);
         this.pingInterval = data.pingInterval;
         this.pingTimeout = data.pingTimeout;
+        this.maxPayload = data.maxPayload;
         this.onOpen();
         // In case open handler closes socket
         if ("closed" === this.readyState)
@@ -6545,12 +6727,39 @@ class WS extends Transport {
             this.transport.writable &&
             !this.upgrading &&
             this.writeBuffer.length) {
-            this.transport.send(this.writeBuffer);
+            const packets = this.getWritablePackets();
+            this.transport.send(packets);
             // keep track of current length of writeBuffer
             // splice writeBuffer and callbackBuffer on `drain`
-            this.prevBufferLen = this.writeBuffer.length;
+            this.prevBufferLen = packets.length;
             this.emitReserved("flush");
         }
+    }
+    /**
+     * Ensure the encoded size of the writeBuffer is below the maxPayload value sent by the server (only for HTTP
+     * long-polling)
+     *
+     * @private
+     */
+    getWritablePackets() {
+        const shouldCheckPayloadSize = this.maxPayload &&
+            this.transport.name === "polling" &&
+            this.writeBuffer.length > 1;
+        if (!shouldCheckPayloadSize) {
+            return this.writeBuffer;
+        }
+        let payloadSize = 1; // first packet type
+        for (let i = 0; i < this.writeBuffer.length; i++) {
+            const data = this.writeBuffer[i].data;
+            if (data) {
+                payloadSize += byteLength(data);
+            }
+            if (i > 0 && payloadSize > this.maxPayload) {
+                return this.writeBuffer.slice(0, i);
+            }
+            payloadSize += 2; // separator + packet type
+        }
+        return this.writeBuffer;
     }
     /**
      * Sends a message.
@@ -6659,7 +6868,7 @@ class WS extends Transport {
      *
      * @api private
      */
-    onClose(reason, desc) {
+    onClose(reason, description) {
         if ("opening" === this.readyState ||
             "open" === this.readyState ||
             "closing" === this.readyState) {
@@ -6672,6 +6881,7 @@ class WS extends Transport {
             // ignore further transport communication
             this.transport.removeAllListeners();
             if (typeof removeEventListener === "function") {
+                removeEventListener("beforeunload", this.beforeunloadEventListener, false);
                 removeEventListener("offline", this.offlineEventListener, false);
             }
             // set ready state
@@ -6679,7 +6889,7 @@ class WS extends Transport {
             // clear session id
             this.id = null;
             // emit close event
-            this.emitReserved("close", reason, desc);
+            this.emitReserved("close", reason, description);
             // clean buffers after, so users can still
             // grab the buffers on `close` event
             this.writeBuffer = [];
@@ -6704,15 +6914,63 @@ class WS extends Transport {
         return filteredUpgrades;
     }
 }
-Socket$1.protocol = protocol$1;
-function clone(obj) {
-    const o = {};
-    for (let i in obj) {
-        if (obj.hasOwnProperty(i)) {
-            o[i] = obj[i];
+Socket$1.protocol = protocol$1;/**
+ * URL parser.
+ *
+ * @param uri - url
+ * @param path - the request path of the connection
+ * @param loc - An object meant to mimic window.location.
+ *        Defaults to window.location.
+ * @public
+ */
+function url(uri, path = "", loc) {
+    let obj = uri;
+    // default to window.location
+    loc = loc || (typeof location !== "undefined" && location);
+    if (null == uri)
+        uri = loc.protocol + "//" + loc.host;
+    // relative path support
+    if (typeof uri === "string") {
+        if ("/" === uri.charAt(0)) {
+            if ("/" === uri.charAt(1)) {
+                uri = loc.protocol + uri;
+            }
+            else {
+                uri = loc.host + uri;
+            }
+        }
+        if (!/^(https?|wss?):\/\//.test(uri)) {
+            if ("undefined" !== typeof loc) {
+                uri = loc.protocol + "//" + uri;
+            }
+            else {
+                uri = "https://" + uri;
+            }
+        }
+        // parse
+        obj = parse(uri);
+    }
+    // make sure we treat `localhost:80` and `localhost` equally
+    if (!obj.port) {
+        if (/^(http|ws)$/.test(obj.protocol)) {
+            obj.port = "80";
+        }
+        else if (/^(http|ws)s$/.test(obj.protocol)) {
+            obj.port = "443";
         }
     }
-    return o;
+    obj.path = obj.path || "/";
+    const ipv6 = obj.host.indexOf(":") !== -1;
+    const host = ipv6 ? "[" + obj.host + "]" : obj.host;
+    // define unique id
+    obj.id = obj.protocol + "://" + host + ":" + obj.port + path;
+    // define href
+    obj.href =
+        obj.protocol +
+            "://" +
+            host +
+            (loc && loc.port === obj.port ? "" : ":" + obj.port);
+    return obj;
 }const withNativeArrayBuffer = typeof ArrayBuffer === "function";
 const isView = (obj) => {
     return typeof ArrayBuffer.isView === "function"
@@ -6795,7 +7053,7 @@ function _deconstructPacket(data, buffers) {
     else if (typeof data === "object" && !(data instanceof Date)) {
         const newData = {};
         for (const key in data) {
-            if (data.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
                 newData[key] = _deconstructPacket(data[key], buffers);
             }
         }
@@ -6819,8 +7077,16 @@ function reconstructPacket(packet, buffers) {
 function _reconstructPacket(data, buffers) {
     if (!data)
         return data;
-    if (data && data._placeholder) {
-        return buffers[data.num]; // appropriate buffer (should be natural order anyway)
+    if (data && data._placeholder === true) {
+        const isIndexValid = typeof data.num === "number" &&
+            data.num >= 0 &&
+            data.num < buffers.length;
+        if (isIndexValid) {
+            return buffers[data.num]; // appropriate buffer (should be natural order anyway)
+        }
+        else {
+            throw new Error("illegal attachments");
+        }
     }
     else if (Array.isArray(data)) {
         for (let i = 0; i < data.length; i++) {
@@ -6829,7 +7095,7 @@ function _reconstructPacket(data, buffers) {
     }
     else if (typeof data === "object") {
         for (const key in data) {
-            if (data.hasOwnProperty(key)) {
+            if (Object.prototype.hasOwnProperty.call(data, key)) {
                 data[key] = _reconstructPacket(data[key], buffers);
             }
         }
@@ -6855,6 +7121,14 @@ var PacketType;
  * A socket.io Encoder instance
  */
 class Encoder {
+    /**
+     * Encoder constructor
+     *
+     * @param {function} replacer - custom replacer to pass down to JSON.parse
+     */
+    constructor(replacer) {
+        this.replacer = replacer;
+    }
     /**
      * Encode a packet as a single string if non-binary, or as a
      * buffer sequence, depending on packet type.
@@ -6895,7 +7169,7 @@ class Encoder {
         }
         // json data
         if (null != obj.data) {
-            str += JSON.stringify(obj.data);
+            str += JSON.stringify(obj.data, this.replacer);
         }
         return str;
     }
@@ -6917,9 +7191,15 @@ class Encoder {
  *
  * @return {Object} decoder
  */
-class Decoder extends Emitter_1 {
-    constructor() {
+class Decoder extends Emitter {
+    /**
+     * Decoder constructor
+     *
+     * @param {function} reviver - custom reviver to pass down to JSON.stringify
+     */
+    constructor(reviver) {
         super();
+        this.reviver = reviver;
     }
     /**
      * Decodes an encoded packet string into packet JSON.
@@ -6929,6 +7209,9 @@ class Decoder extends Emitter_1 {
     add(obj) {
         let packet;
         if (typeof obj === "string") {
+            if (this.reconstructor) {
+                throw new Error("got plaintext data when reconstructing a packet");
+            }
             packet = this.decodeString(obj);
             if (packet.type === PacketType.BINARY_EVENT ||
                 packet.type === PacketType.BINARY_ACK) {
@@ -7020,7 +7303,7 @@ class Decoder extends Emitter_1 {
         }
         // look up json data
         if (str.charAt(++i)) {
-            const payload = tryParse(str.substr(i));
+            const payload = this.tryParse(str.substr(i));
             if (Decoder.isPayloadValid(p.type, payload)) {
                 p.data = payload;
             }
@@ -7029,6 +7312,14 @@ class Decoder extends Emitter_1 {
             }
         }
         return p;
+    }
+    tryParse(str) {
+        try {
+            return JSON.parse(str, this.reviver);
+        }
+        catch (e) {
+            return false;
+        }
     }
     static isPayloadValid(type, payload) {
         switch (type) {
@@ -7053,14 +7344,6 @@ class Decoder extends Emitter_1 {
         if (this.reconstructor) {
             this.reconstructor.finishedReconstruction();
         }
-    }
-}
-function tryParse(str) {
-    try {
-        return JSON.parse(str);
-    }
-    catch (e) {
-        return false;
     }
 }
 /**
@@ -7120,17 +7403,58 @@ const RESERVED_EVENTS = Object.freeze({
     newListener: 1,
     removeListener: 1,
 });
-class Socket extends Emitter_1 {
+/**
+ * A Socket is the fundamental class for interacting with the server.
+ *
+ * A Socket belongs to a certain Namespace (by default /) and uses an underlying {@link Manager} to communicate.
+ *
+ * @example
+ * const socket = io();
+ *
+ * socket.on("connect", () => {
+ *   console.log("connected");
+ * });
+ *
+ * // send an event to the server
+ * socket.emit("foo", "bar");
+ *
+ * socket.on("foobar", () => {
+ *   // an event was received from the server
+ * });
+ *
+ * // upon disconnection
+ * socket.on("disconnect", (reason) => {
+ *   console.log(`disconnected due to ${reason}`);
+ * });
+ */
+class Socket extends Emitter {
     /**
      * `Socket` constructor.
-     *
-     * @public
      */
     constructor(io, nsp, opts) {
         super();
+        /**
+         * Whether the socket is currently connected to the server.
+         *
+         * @example
+         * const socket = io();
+         *
+         * socket.on("connect", () => {
+         *   console.log(socket.connected); // true
+         * });
+         *
+         * socket.on("disconnect", () => {
+         *   console.log(socket.connected); // false
+         * });
+         */
         this.connected = false;
-        this.disconnected = true;
+        /**
+         * Buffer for packets received before the CONNECT packet
+         */
         this.receiveBuffer = [];
+        /**
+         * Buffer for packets that will be sent once the socket is connected
+         */
         this.sendBuffer = [];
         this.ids = 0;
         this.acks = {};
@@ -7142,6 +7466,23 @@ class Socket extends Emitter_1 {
         }
         if (this.io._autoConnect)
             this.open();
+    }
+    /**
+     * Whether the socket is currently disconnected
+     *
+     * @example
+     * const socket = io();
+     *
+     * socket.on("connect", () => {
+     *   console.log(socket.disconnected); // false
+     * });
+     *
+     * socket.on("disconnect", () => {
+     *   console.log(socket.disconnected); // true
+     * });
+     */
+    get disconnected() {
+        return !this.connected;
     }
     /**
      * Subscribe to open, close and packet events
@@ -7160,7 +7501,21 @@ class Socket extends Emitter_1 {
         ];
     }
     /**
-     * Whether the Socket will try to reconnect when its Manager connects or reconnects
+     * Whether the Socket will try to reconnect when its Manager connects or reconnects.
+     *
+     * @example
+     * const socket = io();
+     *
+     * console.log(socket.active); // true
+     *
+     * socket.on("disconnect", (reason) => {
+     *   if (reason === "io server disconnect") {
+     *     // the disconnection was initiated by the server, you need to manually reconnect
+     *     console.log(socket.active); // false
+     *   }
+     *   // else the socket will automatically try to reconnect
+     *   console.log(socket.active); // true
+     * });
      */
     get active() {
         return !!this.subs;
@@ -7168,7 +7523,12 @@ class Socket extends Emitter_1 {
     /**
      * "Opens" the socket.
      *
-     * @public
+     * @example
+     * const socket = io({
+     *   autoConnect: false
+     * });
+     *
+     * socket.connect();
      */
     connect() {
         if (this.connected)
@@ -7181,7 +7541,7 @@ class Socket extends Emitter_1 {
         return this;
     }
     /**
-     * Alias for connect()
+     * Alias for {@link connect()}.
      */
     open() {
         return this.connect();
@@ -7189,8 +7549,17 @@ class Socket extends Emitter_1 {
     /**
      * Sends a `message` event.
      *
+     * This method mimics the WebSocket.send() method.
+     *
+     * @see https://developer.mozilla.org/en-US/docs/Web/API/WebSocket/send
+     *
+     * @example
+     * socket.send("hello");
+     *
+     * // this is equivalent to
+     * socket.emit("message", "hello");
+     *
      * @return self
-     * @public
      */
     send(...args) {
         args.unshift("message");
@@ -7201,12 +7570,22 @@ class Socket extends Emitter_1 {
      * Override `emit`.
      * If the event is in `events`, it's emitted normally.
      *
+     * @example
+     * socket.emit("hello", "world");
+     *
+     * // all serializable datastructures are supported (no need to call JSON.stringify)
+     * socket.emit("hello", 1, "2", { 3: ["4"], 5: Uint8Array.from([6]) });
+     *
+     * // with an acknowledgement from the server
+     * socket.emit("hello", "world", (val) => {
+     *   // ...
+     * });
+     *
      * @return self
-     * @public
      */
     emit(ev, ...args) {
         if (RESERVED_EVENTS.hasOwnProperty(ev)) {
-            throw new Error('"' + ev + '" is a reserved event name');
+            throw new Error('"' + ev.toString() + '" is a reserved event name');
         }
         args.unshift(ev);
         const packet = {
@@ -7228,6 +7607,7 @@ class Socket extends Emitter_1 {
         const discardPacket = this.flags.volatile && (!isTransportWritable || !this.connected);
         if (discardPacket) ;
         else if (this.connected) {
+            this.notifyOutgoingListeners(packet);
             this.packet(packet);
         }
         else {
@@ -7301,13 +7681,13 @@ class Socket extends Emitter_1 {
      * Called upon engine `close`.
      *
      * @param reason
+     * @param description
      * @private
      */
-    onclose(reason) {
+    onclose(reason, description) {
         this.connected = false;
-        this.disconnected = true;
         delete this.id;
-        this.emitReserved("disconnect", reason);
+        this.emitReserved("disconnect", reason, description);
     }
     /**
      * Called with socket packet.
@@ -7330,14 +7710,10 @@ class Socket extends Emitter_1 {
                 }
                 break;
             case PacketType.EVENT:
-                this.onevent(packet);
-                break;
             case PacketType.BINARY_EVENT:
                 this.onevent(packet);
                 break;
             case PacketType.ACK:
-                this.onack(packet);
-                break;
             case PacketType.BINARY_ACK:
                 this.onack(packet);
                 break;
@@ -7421,7 +7797,6 @@ class Socket extends Emitter_1 {
     onconnect(id) {
         this.id = id;
         this.connected = true;
-        this.disconnected = false;
         this.emitBuffered();
         this.emitReserved("connect");
     }
@@ -7433,7 +7808,10 @@ class Socket extends Emitter_1 {
     emitBuffered() {
         this.receiveBuffer.forEach((args) => this.emitEvent(args));
         this.receiveBuffer = [];
-        this.sendBuffer.forEach((packet) => this.packet(packet));
+        this.sendBuffer.forEach((packet) => {
+            this.notifyOutgoingListeners(packet);
+            this.packet(packet);
+        });
         this.sendBuffer = [];
     }
     /**
@@ -7461,10 +7839,20 @@ class Socket extends Emitter_1 {
         this.io["_destroy"](this);
     }
     /**
-     * Disconnects the socket manually.
+     * Disconnects the socket manually. In that case, the socket will not try to reconnect.
+     *
+     * If this is the last active Socket instance of the {@link Manager}, the low-level connection will be closed.
+     *
+     * @example
+     * const socket = io();
+     *
+     * socket.on("disconnect", (reason) => {
+     *   // console.log(reason); prints "io client disconnect"
+     * });
+     *
+     * socket.disconnect();
      *
      * @return self
-     * @public
      */
     disconnect() {
         if (this.connected) {
@@ -7479,10 +7867,9 @@ class Socket extends Emitter_1 {
         return this;
     }
     /**
-     * Alias for disconnect()
+     * Alias for {@link disconnect()}.
      *
      * @return self
-     * @public
      */
     close() {
         return this.disconnect();
@@ -7490,9 +7877,11 @@ class Socket extends Emitter_1 {
     /**
      * Sets the compress flag.
      *
+     * @example
+     * socket.compress(false).emit("hello");
+     *
      * @param compress - if `true`, compresses the sending data
      * @return self
-     * @public
      */
     compress(compress) {
         this.flags.compress = compress;
@@ -7502,8 +7891,10 @@ class Socket extends Emitter_1 {
      * Sets a modifier for a subsequent event emission that the event message will be dropped when this socket is not
      * ready to send messages.
      *
+     * @example
+     * socket.volatile.emit("hello"); // the server may or may not receive it
+     *
      * @returns self
-     * @public
      */
     get volatile() {
         this.flags.volatile = true;
@@ -7513,16 +7904,14 @@ class Socket extends Emitter_1 {
      * Sets a modifier for a subsequent event emission that the callback will be called with an error when the
      * given number of milliseconds have elapsed without an acknowledgement from the server:
      *
-     * ```
+     * @example
      * socket.timeout(5000).emit("my-event", (err) => {
      *   if (err) {
      *     // the server did not acknowledge the event in the given delay
      *   }
      * });
-     * ```
      *
      * @returns self
-     * @public
      */
     timeout(timeout) {
         this.flags.timeout = timeout;
@@ -7532,8 +7921,12 @@ class Socket extends Emitter_1 {
      * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
      * callback.
      *
+     * @example
+     * socket.onAny((event, ...args) => {
+     *   console.log(`got ${event}`);
+     * });
+     *
      * @param listener
-     * @public
      */
     onAny(listener) {
         this._anyListeners = this._anyListeners || [];
@@ -7544,8 +7937,12 @@ class Socket extends Emitter_1 {
      * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
      * callback. The listener is added to the beginning of the listeners array.
      *
+     * @example
+     * socket.prependAny((event, ...args) => {
+     *   console.log(`got event ${event}`);
+     * });
+     *
      * @param listener
-     * @public
      */
     prependAny(listener) {
         this._anyListeners = this._anyListeners || [];
@@ -7555,8 +7952,20 @@ class Socket extends Emitter_1 {
     /**
      * Removes the listener that will be fired when any event is emitted.
      *
+     * @example
+     * const catchAllListener = (event, ...args) => {
+     *   console.log(`got event ${event}`);
+     * }
+     *
+     * socket.onAny(catchAllListener);
+     *
+     * // remove a specific listener
+     * socket.offAny(catchAllListener);
+     *
+     * // or remove all listeners
+     * socket.offAny();
+     *
      * @param listener
-     * @public
      */
     offAny(listener) {
         if (!this._anyListeners) {
@@ -7579,19 +7988,105 @@ class Socket extends Emitter_1 {
     /**
      * Returns an array of listeners that are listening for any event that is specified. This array can be manipulated,
      * e.g. to remove listeners.
-     *
-     * @public
      */
     listenersAny() {
         return this._anyListeners || [];
     }
+    /**
+     * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
+     * callback.
+     *
+     * Note: acknowledgements sent to the server are not included.
+     *
+     * @example
+     * socket.onAnyOutgoing((event, ...args) => {
+     *   console.log(`sent event ${event}`);
+     * });
+     *
+     * @param listener
+     */
+    onAnyOutgoing(listener) {
+        this._anyOutgoingListeners = this._anyOutgoingListeners || [];
+        this._anyOutgoingListeners.push(listener);
+        return this;
+    }
+    /**
+     * Adds a listener that will be fired when any event is emitted. The event name is passed as the first argument to the
+     * callback. The listener is added to the beginning of the listeners array.
+     *
+     * Note: acknowledgements sent to the server are not included.
+     *
+     * @example
+     * socket.prependAnyOutgoing((event, ...args) => {
+     *   console.log(`sent event ${event}`);
+     * });
+     *
+     * @param listener
+     */
+    prependAnyOutgoing(listener) {
+        this._anyOutgoingListeners = this._anyOutgoingListeners || [];
+        this._anyOutgoingListeners.unshift(listener);
+        return this;
+    }
+    /**
+     * Removes the listener that will be fired when any event is emitted.
+     *
+     * @example
+     * const catchAllListener = (event, ...args) => {
+     *   console.log(`sent event ${event}`);
+     * }
+     *
+     * socket.onAnyOutgoing(catchAllListener);
+     *
+     * // remove a specific listener
+     * socket.offAnyOutgoing(catchAllListener);
+     *
+     * // or remove all listeners
+     * socket.offAnyOutgoing();
+     *
+     * @param [listener] - the catch-all listener (optional)
+     */
+    offAnyOutgoing(listener) {
+        if (!this._anyOutgoingListeners) {
+            return this;
+        }
+        if (listener) {
+            const listeners = this._anyOutgoingListeners;
+            for (let i = 0; i < listeners.length; i++) {
+                if (listener === listeners[i]) {
+                    listeners.splice(i, 1);
+                    return this;
+                }
+            }
+        }
+        else {
+            this._anyOutgoingListeners = [];
+        }
+        return this;
+    }
+    /**
+     * Returns an array of listeners that are listening for any event that is specified. This array can be manipulated,
+     * e.g. to remove listeners.
+     */
+    listenersAnyOutgoing() {
+        return this._anyOutgoingListeners || [];
+    }
+    /**
+     * Notify the listeners for each packet sent
+     *
+     * @param packet
+     *
+     * @private
+     */
+    notifyOutgoingListeners(packet) {
+        if (this._anyOutgoingListeners && this._anyOutgoingListeners.length) {
+            const listeners = this._anyOutgoingListeners.slice();
+            for (const listener of listeners) {
+                listener.apply(this, packet.data);
+            }
+        }
+    }
 }/**
- * Expose `Backoff`.
- */
-
-var backo2 = Backoff;
-
-/**
  * Initialize backoff timer with `opts`.
  *
  * - `min` initial timeout in milliseconds [100]
@@ -7602,72 +8097,61 @@ var backo2 = Backoff;
  * @param {Object} opts
  * @api public
  */
-
 function Backoff(opts) {
-  opts = opts || {};
-  this.ms = opts.min || 100;
-  this.max = opts.max || 10000;
-  this.factor = opts.factor || 2;
-  this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
-  this.attempts = 0;
+    opts = opts || {};
+    this.ms = opts.min || 100;
+    this.max = opts.max || 10000;
+    this.factor = opts.factor || 2;
+    this.jitter = opts.jitter > 0 && opts.jitter <= 1 ? opts.jitter : 0;
+    this.attempts = 0;
 }
-
 /**
  * Return the backoff duration.
  *
  * @return {Number}
  * @api public
  */
-
-Backoff.prototype.duration = function(){
-  var ms = this.ms * Math.pow(this.factor, this.attempts++);
-  if (this.jitter) {
-    var rand =  Math.random();
-    var deviation = Math.floor(rand * this.jitter * ms);
-    ms = (Math.floor(rand * 10) & 1) == 0  ? ms - deviation : ms + deviation;
-  }
-  return Math.min(ms, this.max) | 0;
+Backoff.prototype.duration = function () {
+    var ms = this.ms * Math.pow(this.factor, this.attempts++);
+    if (this.jitter) {
+        var rand = Math.random();
+        var deviation = Math.floor(rand * this.jitter * ms);
+        ms = (Math.floor(rand * 10) & 1) == 0 ? ms - deviation : ms + deviation;
+    }
+    return Math.min(ms, this.max) | 0;
 };
-
 /**
  * Reset the number of attempts.
  *
  * @api public
  */
-
-Backoff.prototype.reset = function(){
-  this.attempts = 0;
+Backoff.prototype.reset = function () {
+    this.attempts = 0;
 };
-
 /**
  * Set the minimum duration
  *
  * @api public
  */
-
-Backoff.prototype.setMin = function(min){
-  this.ms = min;
+Backoff.prototype.setMin = function (min) {
+    this.ms = min;
 };
-
 /**
  * Set the maximum duration
  *
  * @api public
  */
-
-Backoff.prototype.setMax = function(max){
-  this.max = max;
+Backoff.prototype.setMax = function (max) {
+    this.max = max;
 };
-
 /**
  * Set the jitter
  *
  * @api public
  */
-
-Backoff.prototype.setJitter = function(jitter){
-  this.jitter = jitter;
-};class Manager extends Emitter_1 {
+Backoff.prototype.setJitter = function (jitter) {
+    this.jitter = jitter;
+};class Manager extends Emitter {
     constructor(uri, opts) {
         var _a;
         super();
@@ -7686,7 +8170,7 @@ Backoff.prototype.setJitter = function(jitter){
         this.reconnectionDelay(opts.reconnectionDelay || 1000);
         this.reconnectionDelayMax(opts.reconnectionDelayMax || 5000);
         this.randomizationFactor((_a = opts.randomizationFactor) !== null && _a !== void 0 ? _a : 0.5);
-        this.backoff = new backo2({
+        this.backoff = new Backoff({
             min: this.reconnectionDelay(),
             max: this.reconnectionDelayMax(),
             jitter: this.randomizationFactor(),
@@ -7852,7 +8336,12 @@ Backoff.prototype.setJitter = function(jitter){
      * @private
      */
     ondata(data) {
-        this.decoder.add(data);
+        try {
+            this.decoder.add(data);
+        }
+        catch (e) {
+            this.onclose("parse error", e);
+        }
     }
     /**
      * Called when parser fully decodes a packet.
@@ -7860,7 +8349,10 @@ Backoff.prototype.setJitter = function(jitter){
      * @private
      */
     ondecoded(packet) {
-        this.emitReserved("packet", packet);
+        // the nextTick call prevents an exception in a user-provided event listener from triggering a disconnection due to a "parse error"
+        nextTick(() => {
+            this.emitReserved("packet", packet);
+        }, this.setTimeoutFn);
     }
     /**
      * Called upon socket error.
@@ -7947,11 +8439,11 @@ Backoff.prototype.setJitter = function(jitter){
      *
      * @private
      */
-    onclose(reason) {
+    onclose(reason, description) {
         this.cleanup();
         this.backoff.reset();
         this._readyState = "closed";
-        this.emitReserved("close", reason);
+        this.emitReserved("close", reason, description);
         if (this._reconnection && !this.skipReconnect) {
             this.reconnect();
         }
@@ -8052,7 +8544,6 @@ Object.assign(lookup, {
     io: lookup,
     connect: lookup,
 });var io=/*#__PURE__*/Object.freeze({__proto__:null,Manager:Manager,Socket:Socket,io:lookup,connect:lookup,'default':lookup,protocol:protocol});var SimpleSignalClient = require('simple-signal-client');
-
 var script$1 = /*#__PURE__*/vue.defineComponent({
   name: 'vue-webrtc',
   components: {},
@@ -8071,10 +8562,11 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
     },
     socketURL: {
       type: String,
-      default: 'https://weston-vue-webrtc-lobby.azurewebsites.net' //default: 'https://localhost:3000'
+      default: 'https://weston-vue-webrtc-lobby.azurewebsites.net'
+      //default: 'https://localhost:3000'
       //default: 'https://192.168.1.201:3000'
-
     },
+
     cameraHeight: {
       type: [Number, String],
       default: 160
@@ -8126,24 +8618,20 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
   methods: {
     join: function join() {
       var _this = this;
-
-      return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee3() {
         var that, constraints, localStream;
-        return regeneratorRuntime.wrap(function _callee3$(_context3) {
+        return _regeneratorRuntime().wrap(function _callee3$(_context3) {
           while (1) {
             switch (_context3.prev = _context3.next) {
               case 0:
                 that = _this;
-
                 _this.log('join');
-
                 _this.socket = lookup(_this.socketURL, _this.ioOptions);
                 _this.signalClient = new SimpleSignalClient(_this.socket);
                 constraints = {
                   video: that.enableVideo,
                   audio: that.enableAudio
                 };
-
                 if (that.deviceId && that.enableVideo) {
                   constraints.video = {
                     deviceId: {
@@ -8151,29 +8639,21 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
                     }
                   };
                 }
-
                 _context3.next = 8;
                 return navigator.mediaDevices.getUserMedia(constraints);
-
               case 8:
                 localStream = _context3.sent;
-
                 _this.log('opened', localStream);
-
                 _this.joinedRoom(localStream, true);
-
                 _this.signalClient.once('discover', function (discoveryData) {
                   that.log('discovered', discoveryData);
-
                   function connectToPeer(_x) {
                     return _connectToPeer.apply(this, arguments);
                   }
-
                   function _connectToPeer() {
-                    _connectToPeer = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(peerID) {
+                    _connectToPeer = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee(peerID) {
                       var _yield$that$signalCli, peer;
-
-                      return regeneratorRuntime.wrap(function _callee$(_context) {
+                      return _regeneratorRuntime().wrap(function _callee$(_context) {
                         while (1) {
                           switch (_context.prev = _context.next) {
                             case 0:
@@ -8181,15 +8661,12 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
                                 _context.next = 2;
                                 break;
                               }
-
                               return _context.abrupt("return");
-
                             case 2:
                               _context.prev = 2;
                               that.log('Connecting to peer');
                               _context.next = 6;
                               return that.signalClient.connect(peerID, that.roomId, that.peerOptions);
-
                             case 6:
                               _yield$that$signalCli = _context.sent;
                               peer = _yield$that$signalCli.peer;
@@ -8200,12 +8677,10 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
                               });
                               _context.next = 14;
                               break;
-
                             case 11:
                               _context.prev = 11;
                               _context.t0 = _context["catch"](2);
                               that.log('Error connecting to peer');
-
                             case 14:
                             case "end":
                               return _context.stop();
@@ -8215,25 +8690,21 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
                     }));
                     return _connectToPeer.apply(this, arguments);
                   }
-
                   discoveryData.peers.forEach(function (peerID) {
                     return connectToPeer(peerID);
                   });
                   that.$emit('opened-room', that.roomId);
                 });
-
                 _this.signalClient.on('request', /*#__PURE__*/function () {
-                  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(request) {
+                  var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee2(request) {
                     var _yield$request$accept, peer;
-
-                    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+                    return _regeneratorRuntime().wrap(function _callee2$(_context2) {
                       while (1) {
                         switch (_context2.prev = _context2.next) {
                           case 0:
                             that.log('requested', request);
                             _context2.next = 3;
                             return request.accept({}, that.peerOptions);
-
                           case 3:
                             _yield$request$accept = _context2.sent;
                             peer = _yield$request$accept.peer;
@@ -8243,7 +8714,6 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
                                 that.onPeer(peer, v.stream);
                               }
                             });
-
                           case 7:
                           case "end":
                             return _context2.stop();
@@ -8251,14 +8721,11 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
                       }
                     }, _callee2);
                   }));
-
                   return function (_x2) {
                     return _ref.apply(this, arguments);
                   };
                 }());
-
                 _this.signalClient.discover(that.roomId);
-
               case 14:
               case "end":
                 return _context3.stop();
@@ -8293,7 +8760,6 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
       var found = that.videoList.find(function (video) {
         return video.id === stream.id;
       });
-
       if (found === undefined) {
         var video = {
           id: stream.id,
@@ -8303,7 +8769,6 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
         };
         that.videoList.push(video);
       }
-
       setTimeout(function () {
         for (var i = 0, len = that.$refs.videos.length; i < len; i++) {
           if (that.$refs.videos[i].id === stream.id) {
@@ -8334,40 +8799,33 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
     },
     getCanvas: function getCanvas() {
       var video = this.$refs.videos[0];
-
       if (video !== null && !this.ctx) {
         var _canvas = document.createElement('canvas');
-
         _canvas.height = video.clientHeight;
         _canvas.width = video.clientWidth;
         this.canvas = _canvas;
         this.ctx = _canvas.getContext('2d');
       }
-
       var ctx = this.ctx,
-          canvas = this.canvas;
+        canvas = this.canvas;
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       return canvas;
     },
     shareScreen: function shareScreen() {
       var _this2 = this;
-
-      return _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4() {
+      return _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee4() {
         var that, screenStream;
-        return regeneratorRuntime.wrap(function _callee4$(_context4) {
+        return _regeneratorRuntime().wrap(function _callee4$(_context4) {
           while (1) {
             switch (_context4.prev = _context4.next) {
               case 0:
                 that = _this2;
-
                 if (!(navigator.mediaDevices == undefined)) {
                   _context4.next = 4;
                   break;
                 }
-
                 that.log('Error: https is required to load cameras');
                 return _context4.abrupt("return");
-
               case 4:
                 _context4.prev = 4;
                 _context4.next = 7;
@@ -8375,24 +8833,19 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
                   video: true,
                   audio: false
                 });
-
               case 7:
                 screenStream = _context4.sent;
-
                 _this2.joinedRoom(screenStream, true);
-
                 that.$emit('share-started', screenStream.id);
                 that.signalClient.peers().forEach(function (p) {
                   return that.onPeer(p, screenStream);
                 });
                 _context4.next = 16;
                 break;
-
               case 13:
                 _context4.prev = 13;
                 _context4.t0 = _context4["catch"](4);
                 that.log('Media error: ' + JSON.stringify(_context4.t0));
-
               case 16:
               case "end":
                 return _context4.stop();
@@ -8404,7 +8857,6 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
     log: function log(message, data) {
       if (this.enableLogs) {
         console.log(message);
-
         if (data != null) {
           console.log(data);
         }
@@ -8414,7 +8866,7 @@ var script$1 = /*#__PURE__*/vue.defineComponent({
 });var _hoisted_1$1 = {
   class: "video-list"
 };
-var _hoisted_2$1 = ["video"];
+var _hoisted_2 = ["video"];
 var _hoisted_3 = ["height", "muted", "id"];
 function render$1(_ctx, _cache, $props, $setup, $data, $options) {
   return vue.openBlock(), vue.createElementBlock("div", _hoisted_1$1, [(vue.openBlock(true), vue.createElementBlock(vue.Fragment, null, vue.renderList(_ctx.videoList, function (item) {
@@ -8431,7 +8883,7 @@ function render$1(_ctx, _cache, $props, $setup, $data, $options) {
       height: _ctx.cameraHeight,
       muted: item.muted,
       id: item.id
-    }, null, 8, _hoisted_3)], 8, _hoisted_2$1);
+    }, null, 8, _hoisted_3)], 8, _hoisted_2);
   }), 128))]);
 }function styleInject(css, ref) {
   if ( ref === void 0 ) ref = {};
@@ -8502,11 +8954,8 @@ script$1.__scopeId = "data-v-41044b41";var script = /*#__PURE__*/vue.defineCompo
 });var _hoisted_1 = {
   class: "vue-webrtc-sample"
 };
-
-var _hoisted_2 = /*#__PURE__*/vue.createTextVNode(".");
-
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-  return vue.openBlock(), vue.createElementBlock("div", _hoisted_1, [vue.createElementVNode("p", null, [vue.createTextVNode("The counter was " + vue.toDisplayString(_ctx.changedBy) + " to ", 1), vue.createElementVNode("b", null, vue.toDisplayString(_ctx.counter), 1), _hoisted_2]), vue.createElementVNode("button", {
+  return vue.openBlock(), vue.createElementBlock("div", _hoisted_1, [vue.createElementVNode("p", null, [vue.createTextVNode("The counter was " + vue.toDisplayString(_ctx.changedBy) + " to ", 1), vue.createElementVNode("b", null, vue.toDisplayString(_ctx.counter), 1), vue.createTextVNode(".")]), vue.createElementVNode("button", {
     onClick: _cache[0] || (_cache[0] = function () {
       return _ctx.increment && _ctx.increment.apply(_ctx, arguments);
     })
@@ -8530,23 +8979,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
 }var css_248z = "\n.vue-webrtc-sample[data-v-3020e3b4] {\r\n    display: block;\r\n    width: 400px;\r\n    margin: 25px auto;\r\n    border: 1px solid #ccc;\r\n    background: #eaeaea;\r\n    text-align: center;\r\n    padding: 25px;\n}\n.vue-webrtc-sample p[data-v-3020e3b4] {\r\n    margin: 0 0 1em;\n}\r\n";
 styleInject(css_248z);script.render = render;
 script.__scopeId = "data-v-3020e3b4";/* eslint-disable import/prefer-default-export */
-window.io = io;var components$1=/*#__PURE__*/Object.freeze({__proto__:null,VueWebRTC:script$1,VueWebrtcSample:script});var install = function installVueWebrtc(app) {
+window.io = io;var components$1=/*#__PURE__*/Object.freeze({__proto__:null,VueWebRTC:script$1,VueWebrtcSample:script});// install function executed by Vue.use()
+var install = function installVueWebrtc(app) {
   Object.entries(components$1).forEach(function (_ref) {
     var _ref2 = _slicedToArray(_ref, 2),
-        componentName = _ref2[0],
-        component = _ref2[1];
-
-    app.component(componentName, component);
-  });
-}; // Create module definition for Vue.use()
-var components=/*#__PURE__*/Object.freeze({__proto__:null,'default':install,VueWebRTC:script$1,VueWebrtcSample:script});// only expose one global var, with component exports exposed as properties of
-// that global var (eg. plugin.component)
-
-Object.entries(components).forEach(function (_ref) {
-  var _ref2 = _slicedToArray(_ref, 2),
       componentName = _ref2[0],
       component = _ref2[1];
-
+    app.component(componentName, component);
+  });
+};var components=/*#__PURE__*/Object.freeze({__proto__:null,'default':install,VueWebRTC:script$1,VueWebrtcSample:script});// Attach named exports directly to plugin. IIFE/CJS will
+// only expose one global var, with component exports exposed as properties of
+// that global var (eg. plugin.component)
+Object.entries(components).forEach(function (_ref) {
+  var _ref2 = _slicedToArray(_ref, 2),
+    componentName = _ref2[0],
+    component = _ref2[1];
   if (componentName !== 'default') {
     install[componentName] = component;
   }
